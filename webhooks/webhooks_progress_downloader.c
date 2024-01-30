@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <compat/strl.h>
 
 #include "include/webhooks.h"
 #include "include/webhooks_progress_downloader.h"
