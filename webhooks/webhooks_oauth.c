@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <compat/strl.h>
 #include <net/net_http.h>
 
 #include "include/webhooks.h"

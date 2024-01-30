@@ -8,6 +8,7 @@
 #include "rc_runtime_types.h"
 
 #include <string.h>
+#include <compat/strl.h>
 
 typedef struct progress_t progress_t;
 
