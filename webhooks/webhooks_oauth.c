@@ -91,8 +91,10 @@ static void woauth_clear_usercode
 //  ------------------------------------------------------------------------------
 static void woauth_retry_accesstoken_retrieval(retro_task_t* task)
 {
-  woauth_trigger_accesstoken_retrieval();
-
+  if (token_refresh_scheduled) {
+    woauth_trigger_accesstoken_retrieval();
+  }
+  
   task_set_finished(task, 1);
 }
 

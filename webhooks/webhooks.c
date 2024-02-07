@@ -356,9 +356,6 @@ void webhooks_initialize
 
   WEBHOOKS_LOG(WEBHOOKS_TAG "Initializing\n");
 
-  //  -----------------------------------------------------------------------------
-  //  IT IS DONE HERE NOW BUT I SHOULD TRY AND DO THIS ONLY ONCE IN wb_initialize().
-  //  I NEED TO FIND THE PROPER PLACE TO HOOK IT UP.
   rc_runtime_init(&locals.runtime);
 
   woauth_get_accesstoken();
