@@ -13,6 +13,7 @@
 
 #include "include/webhooks.h"
 #include "include/webhooks_client.h"
+#include "include/webhooks_memory_dump.h"
 #include "include/webhooks_progress_downloader.h"
 #include "include/webhooks_progress_parser.h"
 #include "include/webhooks_progress_tracker.h"
@@ -387,6 +388,8 @@ void webhooks_load_game
 
   wpd_download_game_progress(&locals, &wh_on_game_progress_downloaded);
 
+  wmp_on_game_loaded(locals.hash);
+
   is_game_loaded = 1;
 }
 
@@ -403,6 +406,8 @@ void webhooks_unload_game
   const retro_time_t time = cpu_features_get_time_usec();
 
   wc_send_game_event(locals.console_id, locals.hash, UNLOADED, frame_counter, time);
+
+  wmp_on_game_unloaded();
 
   is_game_loaded = 0;
 }
@@ -428,7 +433,12 @@ void webhooks_reset_game
   wc_send_game_event(locals.console_id, locals.hash, UNLOADED, frame_counter, time);
 
   wc_send_game_event(locals.console_id, locals.hash, LOADED, frame_counter, time);
+  
+  wmp_on_game_unloaded();
+  
+  wmp_on_game_loaded(locals.hash);
 }
+
 
 //  ---------------------------------------------------------------------------
 //  Called for each frame.
@@ -445,6 +455,8 @@ void webhooks_process_frame
   wb_check_game_events(frame_counter, time);
 
   wb_check_progress(frame_counter, time);
+
+  wmp_dump(frame_counter, &locals.memory);
 }
 
 void webhooks_update_achievements

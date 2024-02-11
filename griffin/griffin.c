@@ -231,6 +231,7 @@ ACHIEVEMENTS
 #ifdef HAVE_WEBHOOKS
 #include "../webhooks/webhooks.c"
 #include "../webhooks/webhooks_oauth.c"
+#include "../webhooks/webhooks_memory_dump.c"
 #include "../webhooks/webhooks_client.c"
 #include "../webhooks/webhooks_progress_downloader.c"
 #include "../webhooks/webhooks_progress_parser.c"

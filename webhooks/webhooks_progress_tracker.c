@@ -26,21 +26,30 @@ bool first_run = false;
 //  ---------------------------------------------------------------------------
 //  Clears the last progress
 //  ---------------------------------------------------------------------------
-void wpt_clear_progress() {
+void wpt_clear_progress
+(
+  void
+) {
   memset(last_progress, 0, sizeof(last_progress));
 }
 
 //  ---------------------------------------------------------------------------
 //  Returns the last progress computed
 //  ---------------------------------------------------------------------------
-const char* wpt_get_last_progress() {
+const char* wpt_get_last_progress
+(
+  void
+) {
   return last_progress;
 }
 
 //  ---------------------------------------------------------------------------
 //
 //  ---------------------------------------------------------------------------
-int wpt_process_frame(rc_runtime_t* runtime)
+int wpt_process_frame
+(
+  rc_runtime_t* runtime
+)
 {
   rc_runtime_richpresence_t* runtime_richpresence = runtime->richpresence;
   
