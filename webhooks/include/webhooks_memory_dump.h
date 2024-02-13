@@ -18,7 +18,7 @@ void wmp_on_game_unloaded
 void wmp_dump
 (
     unsigned long frame_counter,
-    rc_runtime_t* runtime
+    wb_locals_t* locals
 );
 
 RETRO_END_DECLS

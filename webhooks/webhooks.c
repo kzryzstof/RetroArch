@@ -88,8 +88,7 @@ static void* wb_on_hash_handle_file_open
   const char* path
 )
 {
-  return intfstream_open_file(path,
-        RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
+  return intfstream_open_file(path, RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
 }
 
 static void wb_on_hash_handle_file_seek
@@ -117,8 +116,7 @@ static size_t wb_on_hash_handle_file_read
   size_t requested_bytes
 )
 {
-  return intfstream_read((intfstream_t*)file_handle,
-        buffer, requested_bytes);
+  return intfstream_read((intfstream_t*)file_handle, buffer, requested_bytes);
 }
 
 static void wb_on_hash_handle_file_close(void* file_handle)
@@ -233,12 +231,9 @@ static int wh_init_memory
   mmap.descriptors = &descriptors[0];
   mmap.num_descriptors = mmaps->num_descriptors;
 
-  /* RetroArch wraps the retro_memory_descriptor's
-   * in rarch_memory_descriptor_t's, pull them back out */
   for (i = 0; i < mmap.num_descriptors; ++i)
     memcpy(&descriptors[i], &mmaps->descriptors[i].core, sizeof(descriptors[0]));
 
-  //rc_libretro_init_verbose_message_callback(rcheevos_handle_log_message);
   result = rc_libretro_memory_init
   (
     &locals->memory,
@@ -260,13 +255,6 @@ static void wb_check_progress
   retro_time_t time
 )
 {
-  //  No need to update the progress at every frame since
-  //  it can the ability to submerge the server with many
-  //  requests. For instance, when a boss is beaten in Castlevania 1,
-  //  the score is changed very rapidly.
-  //if (frame_counter % PROGRESS_UPDATE_FRAME_FREQUENCY != 0)
-  //  return;
-
   int result = wpt_process_frame(&locals.runtime);
 
   if (result != PROGRESS_UNCHANGED) {
@@ -456,7 +444,7 @@ void webhooks_process_frame
 
   wb_check_progress(frame_counter, time);
 
-  wmp_dump(frame_counter, &locals.memory);
+  wmp_dump(frame_counter, &locals);
 }
 
 void webhooks_update_achievements

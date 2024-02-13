@@ -7,6 +7,8 @@
 #endif
 
 #include "../paths.h"
+#include "../input/input_driver.h"
+#include "../libretro-common/include/libretro.h"
 
 //    TODO These parameters are specific to NES ROMS.
 const uint32_t memory_start = 0x000000;
@@ -49,7 +51,7 @@ void wmp_on_game_unloaded
 void wmp_dump
 (
     unsigned long frame_counter,
-    rc_runtime_t* runtime
+    wb_locals_t* locals
 )
 {
     //  ---------------------------------------------------------------------------
@@ -57,9 +59,9 @@ void wmp_dump
     uint8_t *current_memory_content = memory_content;
 
     for (uint32_t address = memory_start; address < memory_size; address++) {
-        uint8_t* data = rc_libretro_memory_find_avail(&rcheevos_locals.memory, address, NULL);
+        uint8_t* data = rc_libretro_memory_find_avail(&locals->memory, address, NULL);
 
-        if(data == NULL)
+        if (data == NULL)
             break;
 
         *current_memory_content = *data;
@@ -68,10 +70,12 @@ void wmp_dump
   
     if (current_memory_content == memory_content)
       return;
-  
+    
+    bool is_enter_pressed = input_key_pressed(RETRO_DEVICE_ID_JOYPAD_START, false);
+    
     fwrite(&frame_counter, sizeof(unsigned long), 1, file);
+    fwrite(&is_enter_pressed, sizeof(bool), 1, file);
     fwrite(&memory_size, sizeof(uint32_t), 1, file);
     fwrite(&memory_content, sizeof(uint8_t), memory_size, file);
-
     //  ---------------------------------------------------------------------------
 }
