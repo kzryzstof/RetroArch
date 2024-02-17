@@ -440,6 +440,10 @@ void webhooks_process_frame
 
   const retro_time_t time = cpu_features_get_time_usec();
 
+  //  Gets the latest values from the memory.
+  rc_update_memref_values(locals.runtime.memrefs, &wb_peek, NULL);
+  rc_update_variables(locals.runtime.variables, &wb_peek, NULL, NULL);
+
   wb_check_game_events(frame_counter, time);
 
   wb_check_progress(frame_counter, time);

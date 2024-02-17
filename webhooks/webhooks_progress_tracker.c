@@ -59,10 +59,6 @@ int wpt_process_frame
     return 0;
   }
 
-  //  Gets the latest values from the memory.
-  rc_update_memref_values(runtime->memrefs, &wb_peek, NULL);
-  rc_update_variables(runtime->variables, &wb_peek, NULL, NULL);
-
   rc_richpresence_t* richpresence = runtime_richpresence->richpresence;
 
   //
@@ -79,13 +75,13 @@ int wpt_process_frame
 
   rc_richpresence_display_part_t* new_display_part = NULL;
 
-  if(new_display != NULL)
+  if (new_display != NULL)
     new_display_part = new_display->display;
 
   int charactersWritten = 0;
   int frame_progress_position = 0;
 
-  if(new_display_part != NULL)
+  if (new_display_part != NULL)
   {
     for (; new_display_part; new_display_part = new_display_part->next) {
 

@@ -127,7 +127,7 @@ int wpp_parse_game_progress
     WEBHOOKS_LOG(WEBHOOKS_TAG "No game events have been been configured\n");
   }
 
-  if(strlen(game_progress_response.progress) > 0) {
+  if (strlen(game_progress_response.progress) > 0) {
     result = rc_runtime_activate_richpresence(runtime, game_progress_response.progress, NULL, 0);
     
     if (result != 0) {
