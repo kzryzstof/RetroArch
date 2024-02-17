@@ -71,11 +71,10 @@ void wmp_dump
     if (current_memory_content == memory_content)
       return;
     
-    bool is_enter_pressed = input_key_pressed(RETRO_DEVICE_ID_JOYPAD_START, false);
-    
-    fwrite(&frame_counter, sizeof(unsigned long), 1, file);
-    fwrite(&is_enter_pressed, sizeof(bool), 1, file);
-    fwrite(&memory_size, sizeof(uint32_t), 1, file);
-    fwrite(&memory_content, sizeof(uint8_t), memory_size, file);
+      bool is_enter_pressed = input_key_pressed(RETRO_DEVICE_ID_JOYPAD_START, false);
+      fwrite(&frame_counter, sizeof(unsigned long), 1, file);
+      fwrite(&is_enter_pressed, sizeof(bool), 1, file);
+      fwrite(&memory_size, sizeof(uint32_t), 1, file);
+      fwrite(memory_content, sizeof(uint8_t), memory_size, file);
     //  ---------------------------------------------------------------------------
 }
