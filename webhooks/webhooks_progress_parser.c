@@ -80,7 +80,7 @@ int wpp_parse_game_progress
     return -1;
   }
 
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Game progress contains '%d' supported events\n", game_progress_response.num_game_events);
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Game progress contains %d supported events\n", game_progress_response.num_game_events);
 
   if (game_progress_response.num_game_events) {
 
@@ -123,14 +123,22 @@ int wpp_parse_game_progress
       ++game_event;
     }
   }
+  else {
+    WEBHOOKS_LOG(WEBHOOKS_TAG "No game events have been been configured\n");
+  }
 
-  result = rc_runtime_activate_richpresence(runtime, game_progress_response.progress, NULL, 0);
-
-  if (result != 0) {
-    WEBHOOKS_LOG(WEBHOOKS_TAG "Rich presence could not be activated (Result='%d')\n", result);
+  if(strlen(game_progress_response.progress) > 0) {
+    result = rc_runtime_activate_richpresence(runtime, game_progress_response.progress, NULL, 0);
+    
+    if (result != 0) {
+      WEBHOOKS_LOG(WEBHOOKS_TAG "Rich presence could not be activated (Result='%d')\n", result);
+    }
+    else {
+      WEBHOOKS_LOG(WEBHOOKS_TAG "Rich presence has been been activated\n");
+    }
   }
   else {
-    WEBHOOKS_LOG(WEBHOOKS_TAG "Rich presence has been been activated\n");
+    WEBHOOKS_LOG(WEBHOOKS_TAG "No rich presence has been been configured\n");
   }
 
   free(buffer);
