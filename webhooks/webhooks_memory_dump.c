@@ -18,27 +18,32 @@ char dump_file_name[] = "dump.bin";
 uint8_t *memory_content = NULL;
 FILE *file;
 
+#define DUMP_ACTIVATED false
+
 void wmp_on_game_loaded
 (
     const char* rom_hash
 )
 {
-    const char *save_file_dir = dir_get_ptr(RARCH_DIR_SAVEFILE);
-    char *dump_file = (char*)malloc(strlen(save_file_dir) + strlen(dump_file_name) + 2);
+  if(!DUMP_ACTIVATED)
+    return;
 
-    strcat(dump_file, save_file_dir);
-    strcat(dump_file, "/");
-    strcat(dump_file, dump_file_name);
+  const char *save_file_dir = dir_get_ptr(RARCH_DIR_SAVEFILE);
+  char *dump_file = (char*)malloc(strlen(save_file_dir) + strlen(dump_file_name) + 2);
 
-    file = fopen(dump_file, "w+");
+  strcat(dump_file, save_file_dir);
+  strcat(dump_file, "/");
+  strcat(dump_file, dump_file_name);
 
-    unsigned long rom_hash_length = strlen(rom_hash);
+  file = fopen(dump_file, "w+");
 
-    fwrite(&rom_hash_length, sizeof(unsigned long), 1, file);
-    fwrite(rom_hash, sizeof(char), rom_hash_length, file);
+  unsigned long rom_hash_length = strlen(rom_hash);
 
-    if (memory_content == NULL)
-        memory_content = (uint8_t*)malloc(sizeof(uint8_t) * memory_size);
+  fwrite(&rom_hash_length, sizeof(unsigned long), 1, file);
+  fwrite(rom_hash, sizeof(char), rom_hash_length, file);
+
+  if (memory_content == NULL)
+      memory_content = (uint8_t*)malloc(sizeof(uint8_t) * memory_size);
 }
 
 void wmp_on_game_unloaded
@@ -46,11 +51,14 @@ void wmp_on_game_unloaded
   void
 )
 {
-    if (file == NULL)
-     return;
+  if(!DUMP_ACTIVATED)
+    return;
 
-    fclose(file);
-    file = NULL;
+  if (file == NULL)
+   return;
+
+  fclose(file);
+  file = NULL;
 }
 
 void wmp_dump
@@ -59,27 +67,30 @@ void wmp_dump
     wb_locals_t* locals
 )
 {
-    //  ---------------------------------------------------------------------------
-    //  NES Memory dump.
-    uint8_t *current_memory_content = memory_content;
+  if(!DUMP_ACTIVATED)
+    return;
 
-    for (uint32_t address = memory_start; address < memory_size; address++) {
-        uint8_t* data = rc_libretro_memory_find_avail(&locals->memory, address, NULL);
+  //  ---------------------------------------------------------------------------
+  //  NES Memory dump.
+  uint8_t *current_memory_content = memory_content;
 
-        if (data == NULL)
-            break;
+  for (uint32_t address = memory_start; address < memory_size; address++) {
+      uint8_t* data = rc_libretro_memory_find_avail(&locals->memory, address, NULL);
 
-        *current_memory_content = *data;
-        current_memory_content++;
-    }
+      if (data == NULL)
+          break;
+
+      *current_memory_content = *data;
+      current_memory_content++;
+  }
+
+  if (current_memory_content == memory_content)
+    return;
   
-    if (current_memory_content == memory_content)
-      return;
-    
-      bool is_enter_pressed = input_key_pressed(RETRO_DEVICE_ID_JOYPAD_START, false);
-      fwrite(&frame_counter, sizeof(unsigned long), 1, file);
-      fwrite(&is_enter_pressed, sizeof(bool), 1, file);
-      fwrite(&memory_size, sizeof(uint32_t), 1, file);
-      fwrite(memory_content, sizeof(uint8_t), memory_size, file);
-    //  ---------------------------------------------------------------------------
+    bool is_enter_pressed = input_key_pressed(RETRO_DEVICE_ID_JOYPAD_START, false);
+    fwrite(&frame_counter, sizeof(unsigned long), 1, file);
+    fwrite(&is_enter_pressed, sizeof(bool), 1, file);
+    fwrite(&memory_size, sizeof(uint32_t), 1, file);
+    fwrite(memory_content, sizeof(uint8_t), memory_size, file);
+  //  ---------------------------------------------------------------------------
 }
