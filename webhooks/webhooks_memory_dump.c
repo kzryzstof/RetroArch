@@ -1,5 +1,7 @@
 #include "include/webhooks_memory_dump.h"
+#include "include/webhooks.h"
 
+#include <stdio.h>
 #include <errno.h>
 
 #ifdef HAVE_CONFIG_H
