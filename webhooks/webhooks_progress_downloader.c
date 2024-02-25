@@ -166,8 +166,8 @@ static void wpd_set_request_header(async_http_request_t* request)
     return;
   }
 
-  strlcpy(headers, authorization_header, auth_header_len);
-  strlcpy(headers + auth_header_len, access_token, token_len);
+  strlcpy(headers, authorization_header, auth_header_len + 1);
+  strlcpy(headers + auth_header_len, access_token, token_len + 1);
   
   headers[auth_header_len + token_len] = '\r';
   headers[auth_header_len + token_len + 1] = '\n';

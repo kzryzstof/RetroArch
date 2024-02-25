@@ -358,7 +358,7 @@ static void woauth_trigger_accesstoken_retrieval
     return;
   }
 
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Starting retrieving an access token since the 'device_code' is available\n");
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Starting retrieving an access token\n");
 
   woauth_initialize_accesstoken_request(request);
 

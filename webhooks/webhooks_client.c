@@ -224,6 +224,9 @@ static void wc_set_achievement_request_url
   unsigned short game_event,
   unsigned int active_achievements,
   unsigned int total_achievements,
+  const char* achievement_badge,
+  const char* achievement_title,
+  unsigned int achievement_points,
   unsigned long frame_number,
   retro_time_t time,
   async_http_request_t* request
@@ -246,6 +249,9 @@ static void wc_set_achievement_request_url
   rc_url_builder_append_num_param(&builder, "e", game_event);
   rc_url_builder_append_num_param(&builder, "a", active_achievements);
   rc_url_builder_append_num_param(&builder, "b", total_achievements);
+  rc_url_builder_append_str_param(&builder, "d", achievement_badge);
+  rc_url_builder_append_str_param(&builder, "g", achievement_title);
+  rc_url_builder_append_num_param(&builder, "i", achievement_points);
   rc_url_builder_append_str_param(&builder, "f", frame_number_str);
   rc_url_builder_append_str_param(&builder, "t", time_str);
   request->request.post_data = rc_url_builder_finalize(&builder);
@@ -372,6 +378,9 @@ static void wc_prepare_achievement_http_request
   unsigned short game_event,
   unsigned int active_achievements,
   unsigned int total_achievements,
+  const char* achievement_badge,
+  const char* achievement_title,
+  unsigned int achievement_points,
   unsigned long frame_number,
   retro_time_t time,
   async_http_request_t* request
@@ -384,6 +393,9 @@ static void wc_prepare_achievement_http_request
     game_event,
     active_achievements,
     total_achievements,
+    achievement_badge,
+    achievement_title,
+    achievement_points,
     frame_number,
     time,
     request
@@ -463,6 +475,9 @@ static void wc_initiate_achievement_request
   unsigned short game_event,
   unsigned int active_achievements,
   unsigned int total_achievements,
+  const char* achievement_badge,
+  const char* achievement_title,
+  unsigned int achievement_points,
   unsigned long frame_number,
   retro_time_t time,
   async_http_request_t* request
@@ -475,6 +490,9 @@ static void wc_initiate_achievement_request
     game_event,
     active_achievements,
     total_achievements,
+    achievement_badge,
+    achievement_title,
+    achievement_points,
     frame_number,
     time,
     request
@@ -574,6 +592,9 @@ void wc_send_achievement_event
   unsigned short game_event,
   unsigned int active_achievements,
   unsigned int total_achievements,
+  const char* achievement_badge,
+  const char* achievement_title,
+  unsigned int achievement_points,
   unsigned long frame_number,
   retro_time_t time
 )
@@ -595,6 +616,9 @@ void wc_send_achievement_event
     game_event,
     active_achievements,
     total_achievements,
+    achievement_badge,
+    achievement_title,
+    achievement_points,
     frame_number,
     time,
     request
