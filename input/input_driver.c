@@ -688,7 +688,7 @@ bool input_driver_button_combo(
    return false;
 }
 
-static int16_t input_state_wrap(
+static int32_t input_state_wrap(
       input_driver_t *current_input,
       void *data,
       const input_device_driver_t *joypad,
@@ -701,7 +701,7 @@ static int16_t input_state_wrap(
       unsigned idx,
       unsigned id)
 {
-   int16_t ret                   = 0;
+   int32_t ret                   = 0;
 
    if (!binds)
       return 0;
@@ -760,6 +760,12 @@ static int16_t input_state_wrap(
          }
       }
    }
+   else if (device == RETRO_DEVICE_KEYBOARD)
+   {
+      /* Always ignore null key. */
+      if (id == RETROK_UNKNOWN)
+         return ret;
+   }
 
    if (current_input && current_input->input_state)
       ret |= current_input->input_state(
@@ -773,6 +779,7 @@ static int16_t input_state_wrap(
             device,
             idx,
             id);
+
    return ret;
 }
 
@@ -1191,7 +1198,7 @@ static int16_t input_state_device(
       settings_t *settings,
       input_mapper_t *handle,
       unsigned input_analog_dpad_mode,
-      int16_t ret,
+      int32_t ret,
       unsigned port, unsigned device,
       unsigned idx, unsigned id,
       bool button_mask)
@@ -1273,7 +1280,7 @@ static int16_t input_state_device(
                 */
                unsigned turbo_mode = settings->uints.input_turbo_mode;
 
-               if (turbo_mode > INPUT_TURBO_MODE_CLASSIC)
+               if (turbo_mode > INPUT_TURBO_MODE_CLASSIC_TOGGLE)
                {
                   /* Pressing turbo button toggles turbo mode on or off.
                    * Holding the button will
@@ -1343,7 +1350,7 @@ static int16_t input_state_device(
                            < settings->uints.input_turbo_duty_cycle);
                   }
                }
-               else
+               else if (turbo_mode == INPUT_TURBO_MODE_CLASSIC)
                {
                   /* If turbo button is held, all buttons pressed except
                    * for D-pad will go into a turbo mode. Until the button is
@@ -1363,6 +1370,30 @@ static int16_t input_state_device(
                   }
                   else
                      input_st->turbo_btns.enable[port] &= ~(1 << id);
+               }
+               else /* Classic toggle mode */
+               {
+                  /* Works pretty much the same as classic mode above
+                   * but with a toggle mechanic */
+                  if (res)
+                  {
+                     /* Check if it's a new press, if we're still holding
+                      * the button from previous toggle then ignore */
+                     if (     input_st->turbo_btns.frame_enable[port]
+                           && !(input_st->turbo_btns.turbo_pressed[port] & (1 << id)))
+                        input_st->turbo_btns.enable[port] ^= (1 << id);
+
+                     if (input_st->turbo_btns.enable[port] & (1 << id))
+                        /* If turbo button is enabled for this key ID */
+                        res = ((   input_st->turbo_btns.count
+                                 % settings->uints.input_turbo_period)
+                              < settings->uints.input_turbo_duty_cycle);
+                  }
+                  /* Remember for the toggle check */
+                  if (input_st->turbo_btns.frame_enable[port])
+                     input_st->turbo_btns.turbo_pressed[port] |= (1 << id);
+                  else
+                     input_st->turbo_btns.turbo_pressed[port] &= ~(1 << id);
                }
             }
          }
@@ -1572,8 +1603,8 @@ static int16_t input_state_internal(
     * 'virtual' port index */
    while ((mapped_port = *(input_remap_port_map++)) < MAX_USERS)
    {
-      int16_t ret                     = 0;
-      int16_t port_result             = 0;
+      int32_t ret                     = 0;
+      int32_t port_result             = 0;
       unsigned input_analog_dpad_mode = settings->uints.input_analog_dpad_mode[mapped_port];
 
       joypad_info.joy_idx             = settings->uints.input_joypad_index[mapped_port];
@@ -3717,7 +3748,7 @@ void joypad_driver_reinit(void *data, const char *joypad_driver_name)
 #endif
    if (!input_driver_st.primary_joypad)
       input_driver_st.primary_joypad    = input_joypad_init_driver(joypad_driver_name, data);
-#ifdef HAVE_MFI
+#if 0
    if (!input_driver_st.secondary_joypad)
       input_driver_st.secondary_joypad  = input_joypad_init_driver("mfi", data);
 #endif
@@ -3800,7 +3831,7 @@ void input_driver_init_joypads(void)
       input_driver_st.primary_joypad        = input_joypad_init_driver(
          settings->arrays.input_joypad_driver,
          input_driver_st.current_data);
-#ifdef HAVE_MFI
+#if 0
    if (!input_driver_st.secondary_joypad)
       input_driver_st.secondary_joypad      = input_joypad_init_driver(
             "mfi",
@@ -4738,7 +4769,8 @@ static void input_keys_pressed(
       const struct retro_keybind *binds_auto,
       const input_device_driver_t *joypad,
       const input_device_driver_t *sec_joypad,
-      rarch_joypad_info_t *joypad_info)
+      rarch_joypad_info_t *joypad_info,
+      settings_t *settings)
 {
    unsigned i;
    input_driver_state_t *input_st = &input_driver_st;
@@ -4753,6 +4785,10 @@ static void input_keys_pressed(
 
    if (!binds)
       return;
+
+   if (     settings->bools.input_hotkey_device_merge
+         && (libretro_hotkey_set || keyboard_hotkey_set))
+      libretro_hotkey_set = keyboard_hotkey_set = true;
 
    if (     binds[port][RARCH_ENABLE_HOTKEY].valid
          && CHECK_INPUT_DRIVER_BLOCK_HOTKEY(binds_norm, binds_auto))
@@ -4806,7 +4842,7 @@ static void input_keys_pressed(
    }
 
    {
-      int16_t ret                 = 0;
+      int32_t ret                 = 0;
       bool libretro_input_pressed = false;
 
       /* Check libretro input if emulated device type is active,
@@ -4824,7 +4860,7 @@ static void input_keys_pressed(
                port, RETRO_DEVICE_JOYPAD, 0,
                RETRO_DEVICE_ID_JOYPAD_MASK);
 
-      for (i = 0; i < RARCH_FIRST_META_KEY; i++)
+      for (i = 0; i < RARCH_FIRST_CUSTOM_BIND; i++)
       {
          if (     (ret & (UINT64_C(1) << i))
                || input_keys_pressed_other_sources(input_st, i, p_new_state))
@@ -5041,7 +5077,7 @@ static void input_keys_pressed(
 void bsv_movie_free(bsv_movie_t*);
 
 void bsv_movie_enqueue(input_driver_state_t *input_st, bsv_movie_t * state, enum bsv_flags flags)
-{ 
+{
    if (input_st->bsv_movie_state_next_handle)
       bsv_movie_free(input_st->bsv_movie_state_next_handle);
    input_st->bsv_movie_state_next_handle    = state;
@@ -5561,7 +5597,7 @@ void input_driver_poll(void)
                if (joypad)
                {
                   unsigned k, j;
-                  int16_t ret = input_state_wrap(
+                  int32_t ret = input_state_wrap(
                         input_st->current_driver,
                         input_st->current_data,
                         input_st->primary_joypad,
@@ -6020,7 +6056,7 @@ void input_remapping_cache_global_config(void)
                     | INP_FLAG_OLD_LIBRETRO_DEVICE_SET;
 }
 
-void input_remapping_restore_global_config(bool clear_cache)
+void input_remapping_restore_global_config(bool clear_cache, bool restore_analog_dpad_mode)
 {
    unsigned i;
    settings_t *settings           = config_get_ptr();
@@ -6031,7 +6067,8 @@ void input_remapping_restore_global_config(bool clear_cache)
 
    for (i = 0; i < MAX_USERS; i++)
    {
-      if ((input_st->flags & INP_FLAG_OLD_ANALOG_DPAD_MODE_SET)
+      if (   (input_st->flags & INP_FLAG_OLD_ANALOG_DPAD_MODE_SET)
+          &&  restore_analog_dpad_mode
           && (settings->uints.input_analog_dpad_mode[i] !=
                input_st->old_analog_dpad_mode[i]))
          configuration_set_uint(settings,
@@ -6153,7 +6190,7 @@ void input_remapping_set_defaults(bool clear_cache)
     * the last core init
     * > Prevents remap changes from 'bleeding through'
     *   into the main config file */
-   input_remapping_restore_global_config(clear_cache);
+   input_remapping_restore_global_config(clear_cache, true);
 }
 
 void input_driver_collect_system_input(input_driver_state_t *input_st,
@@ -6265,7 +6302,8 @@ void input_driver_collect_system_input(input_driver_state_t *input_st,
             binds_auto,
             joypad,
             sec_joypad,
-            &joypad_info);
+            &joypad_info,
+            settings);
 
 #ifdef HAVE_MENU
       if (menu_is_alive)
@@ -6335,7 +6373,7 @@ void input_driver_collect_system_input(input_driver_state_t *input_st,
 
          for (i = 0; i < ARRAY_SIZE(ids); i++)
          {
-            if (current_input->input_state(
+            if (ids[i][0] && current_input->input_state(
                      input_st->current_data,
                      joypad,
                      sec_joypad,
@@ -6570,7 +6608,7 @@ void input_keyboard_event(bool down, unsigned code,
             say_char[1] = '\0';
 
             if (character == 127 || character == 8)
-               accessibility_speak_priority(
+               navigation_say(
                      accessibility_enable,
                      accessibility_narrator_speech_speed,
                      "backspace", 10);
@@ -6578,12 +6616,12 @@ void input_keyboard_event(bool down, unsigned code,
             {
                const char *lut_name = accessibility_lut_name(c);
                if (lut_name)
-                  accessibility_speak_priority(
+                  navigation_say(
                         accessibility_enable,
                         accessibility_narrator_speech_speed,
                         lut_name, 10);
                else if (character != 0)
-                  accessibility_speak_priority(
+                  navigation_say(
                         accessibility_enable,
                         accessibility_narrator_speech_speed,
                         say_char, 10);

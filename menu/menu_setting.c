@@ -2531,9 +2531,15 @@ static int setting_action_ok_bind_all_save_autoconfig(
 
    if (!string_is_empty(name) &&
          config_save_autoconf_profile(name, index_offset))
+   {
+      char buf[PATH_MAX_LENGTH];
+      char msg[PATH_MAX_LENGTH];
+      config_get_autoconf_profile_filename(name, index_offset, buf, sizeof(buf));
+      snprintf(msg, sizeof(msg),msg_hash_to_str(MSG_AUTOCONFIG_FILE_SAVED_SUCCESSFULLY_NAMED),buf);
       runloop_msg_queue_push(
-            msg_hash_to_str(MSG_AUTOCONFIG_FILE_SAVED_SUCCESSFULLY), 1, 100, true,
+            msg, 1, 180, true,
             NULL, MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
+   }
    else
       runloop_msg_queue_push(
             msg_hash_to_str(MSG_AUTOCONFIG_FILE_ERROR_SAVING), 1, 100, true,
@@ -6395,6 +6401,124 @@ static void setting_get_string_representation_video_swap_interval(rarch_setting_
       snprintf(s, len, "%u", *setting->value.target.unsigned_integer);
 }
 
+static void setting_get_string_representation_black_frame_insertion(rarch_setting_t *setting,
+      char *s, size_t len)
+{
+   if (!setting)
+      return;
+
+   switch (*setting->value.target.unsigned_integer)
+   {
+      case 0:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_OFF), len);
+         break;
+      case 1:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_120), len);
+         break;
+      case 2:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_180), len);
+         break;
+      case 3:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_240), len);
+         break;
+      case 4:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_300), len);
+         break;
+      case 5:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_360), len);
+         break;
+      case 6:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_420), len);
+         break;
+      case 7:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_480), len);
+         break;
+      case 8:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_540), len);
+         break;
+      case 9:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_600), len);
+         break;
+      case 10:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_660), len);
+         break;
+      case 11:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_720), len);
+         break;
+      case 12:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_780), len);
+         break;
+      case 13:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_840), len);
+         break;
+      case 14:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_900), len);
+         break;
+      case 15:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_960), len);
+         break;
+   }
+}
+
+static void setting_get_string_representation_shader_subframes(rarch_setting_t *setting,
+      char *s, size_t len)
+{
+   if (!setting)
+      return;
+
+   switch (*setting->value.target.unsigned_integer)
+   {
+      case 1:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_OFF), len);
+         break;
+      case 2:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_120), len);
+         break;
+      case 3:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_180), len);
+         break;
+      case 4:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_240), len);
+         break;
+      case 5:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_300), len);
+         break;
+      case 6:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_360), len);
+         break;
+      case 7:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_420), len);
+         break;
+      case 8:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_480), len);
+         break;
+      case 9:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_540), len);
+         break;
+      case 10:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_600), len);
+         break;
+      case 11:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_660), len);
+         break;
+      case 12:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_720), len);
+         break;
+      case 13:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_780), len);
+         break;
+      case 14:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_840), len);
+         break;
+      case 15:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_900), len);
+         break;
+      case 16:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_960), len);
+         break;
+   }
+}
+
 static void setting_get_string_representation_video_frame_delay(rarch_setting_t *setting,
       char *s, size_t len)
 {
@@ -6796,6 +6920,9 @@ static void setting_get_string_representation_turbo_mode(
    {
       case INPUT_TURBO_MODE_CLASSIC:
          strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_TURBO_MODE_CLASSIC), len);
+         break;
+      case INPUT_TURBO_MODE_CLASSIC_TOGGLE:
+         strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_TURBO_MODE_CLASSIC_TOGGLE), len);
          break;
       case INPUT_TURBO_MODE_SINGLEBUTTON:
          strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_TURBO_MODE_SINGLEBUTTON), len);
@@ -7910,13 +8037,6 @@ static void general_read_handler(rarch_setting_t *setting)
       case MENU_ENUM_LABEL_VIDEO_REFRESH_RATE_AUTO:
          *setting->value.target.fraction = settings->floats.video_refresh_rate;
          break;
-      case MENU_ENUM_LABEL_INPUT_PLAYER1_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER2_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER3_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER4_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER5_JOYPAD_INDEX:
-         *setting->value.target.integer = settings->uints.input_joypad_index[setting->enum_idx - MENU_ENUM_LABEL_INPUT_PLAYER1_JOYPAD_INDEX];
-         break;
 #ifdef ANDROID
        case MENU_ENUM_LABEL_INPUT_SELECT_PHYSICAL_KEYBOARD:
            setting->value.target.string = settings->arrays.input_android_physical_keyboard;
@@ -8109,14 +8229,110 @@ static void general_write_handler(rarch_setting_t *setting)
                settings->floats.audio_max_timing_skew,
                *setting->value.target.fraction);
          break;
+      case MENU_ENUM_LABEL_VIDEO_BLACK_FRAME_INSERTION:
+         /* If enabling BFI, auto disable other sync settings 
+            that do not work together with BFI */
+         if (*setting->value.target.unsigned_integer > 0)
+         {
+            configuration_set_uint(settings,
+               settings->uints.video_swap_interval,
+               0);
+            configuration_set_uint(settings,
+               settings->uints.video_frame_delay,
+               0);
+            configuration_set_bool(settings,
+               settings->bools.video_frame_delay_auto,
+               0);
+            configuration_set_bool(settings,
+               settings->bools.vrr_runloop_enable,
+               0);
+            configuration_set_uint(settings,
+               settings->uints.video_shader_subframes,
+               1);
+
+             /* Set reasonable default for dark frames for current BFI value.
+                Even results OR odd 60hz multiples should be mostly immune to lcd voltage retention.
+                Nothing to be done for 120hz except phase retention usage if needed. */
+            if (*setting->value.target.unsigned_integer == 1)
+            {
+               configuration_set_uint(settings,
+                  settings->uints.video_bfi_dark_frames,
+                  1);
+            }
+            /* Odd 60hz multiples, safe to nudge result over 50% for more clarity by default */
+            else if ((*setting->value.target.unsigned_integer + 1) % 2 != 0)
+            {
+               configuration_set_uint(settings,
+                  settings->uints.video_bfi_dark_frames,
+                  ((*setting->value.target.unsigned_integer + 1) / 2) + 1);
+            }
+            /* Odd result on even multiple, bump result up one */
+            else if (((*setting->value.target.unsigned_integer + 1) / 2) % 2 != 0)
+            {
+               configuration_set_uint(settings,
+                  settings->uints.video_bfi_dark_frames,
+                  ((*setting->value.target.unsigned_integer + 1) / 2) + 1);
+            }
+            /* Even result on even multiple, leave alone */
+            else
+            {
+               configuration_set_uint(settings,
+                  settings->uints.video_bfi_dark_frames,
+                  ((*setting->value.target.unsigned_integer + 1) / 2));
+            }
+         }
 #ifdef HAVE_CHEEVOS
+         rcheevos_validate_config_settings();
+#endif
+         break;
+      case MENU_ENUM_LABEL_VIDEO_SHADER_SUBFRAMES:
+         /* If enabling BFI, auto disable other sync settings 
+            that do not work together with subframes */
+         if (*setting->value.target.unsigned_integer > 1)
+         {
+            configuration_set_uint(settings,
+               settings->uints.video_swap_interval,
+               0);
+            configuration_set_uint(settings,
+               settings->uints.video_frame_delay,
+               0);
+            configuration_set_bool(settings,
+               settings->bools.video_frame_delay_auto,
+               0);
+            configuration_set_bool(settings,
+               settings->bools.vrr_runloop_enable,
+               0);
+            configuration_set_uint(settings,
+               settings->uints.video_black_frame_insertion,
+               0);
+         }
+#ifdef HAVE_CHEEVOS
+         rcheevos_validate_config_settings();
+#endif
+         break;
+      case MENU_ENUM_LABEL_VIDEO_BFI_DARK_FRAMES:
+         /* Limit choice to max possible for current BFI Hz Setting */
+         if (*setting->value.target.unsigned_integer > settings->uints.video_black_frame_insertion)
+            configuration_set_uint(settings,
+               settings->uints.video_bfi_dark_frames,
+               settings->uints.video_black_frame_insertion);
+         break;
       case MENU_ENUM_LABEL_VIDEO_FRAME_DELAY:
       case MENU_ENUM_LABEL_VIDEO_FRAME_DELAY_AUTO:
       case MENU_ENUM_LABEL_VIDEO_SWAP_INTERVAL:
-      case MENU_ENUM_LABEL_VIDEO_BLACK_FRAME_INSERTION:
+      case MENU_ENUM_LABEL_VRR_RUNLOOP_ENABLE:
+         /* BFI or shader subframes doesn't play nice with any of these */
+         configuration_set_bool(settings,
+            settings->uints.video_black_frame_insertion,
+            0);
+         configuration_set_uint(settings,
+            settings->uints.video_shader_subframes,
+            1);
+#ifdef HAVE_CHEEVOS
          rcheevos_validate_config_settings();
-         break;
 #endif
+         break;
+
       case MENU_ENUM_LABEL_VIDEO_REFRESH_RATE_AUTO:
          driver_ctl(RARCH_DRIVER_CTL_SET_REFRESH_RATE, setting->value.target.fraction);
 
@@ -8228,14 +8444,6 @@ static void general_write_handler(rarch_setting_t *setting)
          break;
       case MENU_ENUM_LABEL_INPUT_MAX_USERS:
          command_event(CMD_EVENT_CONTROLLER_INIT, NULL);
-         break;
-      case MENU_ENUM_LABEL_INPUT_PLAYER1_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER2_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER3_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER4_JOYPAD_INDEX:
-      case MENU_ENUM_LABEL_INPUT_PLAYER5_JOYPAD_INDEX:
-         settings->modified           = true;
-         settings->uints.input_joypad_index[setting->enum_idx - MENU_ENUM_LABEL_INPUT_PLAYER1_JOYPAD_INDEX]             = *setting->value.target.integer;
          break;
 #ifdef ANDROID
        case MENU_ENUM_LABEL_INPUT_SELECT_PHYSICAL_KEYBOARD:
@@ -9065,8 +9273,6 @@ static bool setting_append_list_input_player_options(
          parent_group);
 
    {
-      char tmp_string[32];
-
       static char device_index[MAX_USERS][64];
       static char mouse_index[MAX_USERS][64];
       static char analog_to_digital[MAX_USERS][64];
@@ -9085,23 +9291,19 @@ static bool setting_append_list_input_player_options(
       static char split_joycon[MAX_USERS][64];
       static char label_split_joycon[MAX_USERS][64];
 #endif
-      size_t _len = strlcpy(tmp_string, "input_player", sizeof(tmp_string));
-      snprintf(tmp_string + _len, sizeof(tmp_string) - _len, "%u", user + 1);
 
-      snprintf(analog_to_digital[user], sizeof(analog_to_digital[user]),
+      snprintf(analog_to_digital[user],        sizeof(analog_to_digital[user]),
             msg_hash_to_str(MENU_ENUM_LABEL_INPUT_PLAYER_ANALOG_DPAD_MODE), user + 1);
-      fill_pathname_join_delim(device_index[user], tmp_string, "joypad_index", '_',
-            sizeof(device_index[user]));
-      fill_pathname_join_delim(mouse_index[user], tmp_string, "mouse_index", '_',
-            sizeof(mouse_index[user]));
-      fill_pathname_join_delim(bind_all[user], tmp_string, "bind_all", '_',
-            sizeof(bind_all[user]));
-      fill_pathname_join_delim(bind_all_save_autoconfig[user],
-            tmp_string, "bind_all_save_autoconfig", '_',
-            sizeof(bind_all_save_autoconfig[user]));
-      fill_pathname_join_delim(bind_defaults[user],
-            tmp_string, "bind_defaults", '_',
-            sizeof(bind_defaults[user]));
+      snprintf(device_index[user],             sizeof(device_index[user]),
+            msg_hash_to_str(MENU_ENUM_LABEL_INPUT_JOYPAD_INDEX),            user + 1);
+      snprintf(mouse_index[user],              sizeof(mouse_index[user]),
+            msg_hash_to_str(MENU_ENUM_LABEL_INPUT_MOUSE_INDEX),             user + 1);
+      snprintf(bind_all[user],                 sizeof(bind_all[user]),
+            msg_hash_to_str(MENU_ENUM_LABEL_INPUT_BIND_ALL_INDEX),          user + 1);
+      snprintf(bind_all_save_autoconfig[user], sizeof(bind_all_save_autoconfig[user]),
+            msg_hash_to_str(MENU_ENUM_LABEL_INPUT_SAVE_AUTOCONFIG_INDEX),   user + 1);
+      snprintf(bind_defaults[user],            sizeof(bind_defaults[user]),
+            msg_hash_to_str(MENU_ENUM_LABEL_INPUT_BIND_DEFAULTS_INDEX),     user + 1);
 
       strlcpy(label_analog_to_digital[user],
             msg_hash_to_str(MENU_ENUM_LABEL_VALUE_INPUT_ADC_TYPE),
@@ -10749,7 +10951,7 @@ static bool setting_append_list(
       case SETTINGS_LIST_CONFIGURATION:
          {
             uint8_t i, listing = 0;
-            struct bool_entry bool_entries[8];
+            struct bool_entry bool_entries[9];
             START_GROUP(list, list_info, &group_info,
                   msg_hash_to_str(MENU_ENUM_LABEL_VALUE_CONFIGURATION_SETTINGS), parent_group);
 
@@ -10790,6 +10992,13 @@ static bool setting_append_list(
             bool_entries[listing].name_enum_idx  = MENU_ENUM_LABEL_AUTO_REMAPS_ENABLE;
             bool_entries[listing].SHORT_enum_idx = MENU_ENUM_LABEL_VALUE_AUTO_REMAPS_ENABLE;
             bool_entries[listing].default_value  = DEFAULT_AUTO_REMAPS_ENABLE;
+            bool_entries[listing].flags          = SD_FLAG_ADVANCED;
+            listing++;
+
+            bool_entries[listing].target         = &settings->bools.initial_disk_change_enable;
+            bool_entries[listing].name_enum_idx  = MENU_ENUM_LABEL_INITIAL_DISK_CHANGE_ENABLE;
+            bool_entries[listing].SHORT_enum_idx = MENU_ENUM_LABEL_VALUE_INITIAL_DISK_CHANGE_ENABLE;
+            bool_entries[listing].default_value  = DEFAULT_INITIAL_DISK_CHANGE_ENABLE;
             bool_entries[listing].flags          = SD_FLAG_ADVANCED;
             listing++;
 
@@ -13242,6 +13451,26 @@ static bool setting_append_list(
 
             CONFIG_UINT(
                   list, list_info,
+                  &settings->uints.video_shader_subframes,
+                  MENU_ENUM_LABEL_VIDEO_SHADER_SUBFRAMES,
+                  MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES,
+                  DEFAULT_SHADER_SUBFRAMES,
+                  &group_info,
+                  &subgroup_info,
+                  parent_group,
+                  general_write_handler,
+                  general_read_handler);
+            (*list)[list_info->index - 1].action_ok = &setting_action_ok_uint;
+            (*list)[list_info->index - 1].get_string_representation =
+                  &setting_get_string_representation_shader_subframes;
+            (*list)[list_info->index - 1].offset_by = 1;
+            menu_settings_list_current_add_range(list, list_info, 1, 16, 1, true, true);
+            MENU_SETTINGS_LIST_CURRENT_ADD_CMD(list, list_info, CMD_EVENT_REINIT);
+            SETTINGS_DATA_LIST_CURRENT_ADD_FLAGS(list, list_info, SD_FLAG_CMD_APPLY_AUTO);
+            SETTINGS_DATA_LIST_CURRENT_ADD_FLAGS(list, list_info, SD_FLAG_LAKKA_ADVANCED);
+
+            CONFIG_UINT(
+                  list, list_info,
                   &settings->uints.video_max_swapchain_images,
                   MENU_ENUM_LABEL_VIDEO_MAX_SWAPCHAIN_IMAGES,
                   MENU_ENUM_LABEL_VALUE_VIDEO_MAX_SWAPCHAIN_IMAGES,
@@ -13463,9 +13692,26 @@ static bool setting_append_list(
                         general_write_handler,
                         general_read_handler);
                   (*list)[list_info->index - 1].action_ok = &setting_action_ok_uint;
-                  menu_settings_list_current_add_range(list, list_info, 0, 5, 1, true, true);
+                  (*list)[list_info->index - 1].get_string_representation =
+                        &setting_get_string_representation_black_frame_insertion;
+                  menu_settings_list_current_add_range(list, list_info, 0, 15, 1, true, true);
                   MENU_SETTINGS_LIST_CURRENT_ADD_CMD(list, list_info, CMD_EVENT_REINIT);
                   SETTINGS_DATA_LIST_CURRENT_ADD_FLAGS(list, list_info, SD_FLAG_CMD_APPLY_AUTO);
+
+                  CONFIG_UINT(
+                        list, list_info,
+                        &settings->uints.video_bfi_dark_frames,
+                        MENU_ENUM_LABEL_VIDEO_BFI_DARK_FRAMES,
+                        MENU_ENUM_LABEL_VALUE_VIDEO_BFI_DARK_FRAMES,
+                        DEFAULT_BFI_DARK_FRAMES,
+                        &group_info,
+                        &subgroup_info,
+                        parent_group,
+                        general_write_handler,
+                        general_read_handler);
+                  (*list)[list_info->index - 1].action_ok = &setting_action_ok_uint;
+                  (*list)[list_info->index - 1].offset_by = 1;
+                  menu_settings_list_current_add_range(list, list_info, 1, 15, 1, true, true);
                }
             }
 #endif
@@ -14811,6 +15057,22 @@ static bool setting_append_list(
 
             CONFIG_BOOL(
                   list, list_info,
+                  &settings->bools.input_hotkey_device_merge,
+                  MENU_ENUM_LABEL_INPUT_HOTKEY_DEVICE_MERGE,
+                  MENU_ENUM_LABEL_VALUE_INPUT_HOTKEY_DEVICE_MERGE,
+                  DEFAULT_INPUT_HOTKEY_DEVICE_MERGE,
+                  MENU_ENUM_LABEL_VALUE_OFF,
+                  MENU_ENUM_LABEL_VALUE_ON,
+                  &group_info,
+                  &subgroup_info,
+                  parent_group,
+                  general_write_handler,
+                  general_read_handler,
+                  SD_FLAG_NONE
+                  );
+
+            CONFIG_BOOL(
+                  list, list_info,
                   &settings->bools.input_menu_swap_ok_cancel_buttons,
                   MENU_ENUM_LABEL_MENU_INPUT_SWAP_OK_CANCEL,
                   MENU_ENUM_LABEL_VALUE_MENU_INPUT_SWAP_OK_CANCEL,
@@ -15064,7 +15326,7 @@ static bool setting_append_list(
                   general_write_handler,
                   general_read_handler);
             (*list)[list_info->index - 1].action_ok = &setting_action_ok_uint;
-            menu_settings_list_current_add_range(list, list_info, 0, 1.0, 0.01, true, true);
+            menu_settings_list_current_add_range(list, list_info, 0.05, 0.99, 0.01, true, true);
             SETTINGS_DATA_LIST_CURRENT_ADD_FLAGS(list, list_info, SD_FLAG_LAKKA_ADVANCED);
 
             CONFIG_FLOAT(
@@ -15603,6 +15865,8 @@ static bool setting_append_list(
          (*list)[list_info->index - 1].action_ok    = &setting_bool_action_left_with_refresh;
          (*list)[list_info->index - 1].action_left  = &setting_bool_action_left_with_refresh;
          (*list)[list_info->index - 1].action_right = &setting_bool_action_right_with_refresh;
+         MENU_SETTINGS_LIST_CURRENT_ADD_CMD(list, list_info, CMD_EVENT_REINIT);
+         SETTINGS_DATA_LIST_CURRENT_ADD_FLAGS(list, list_info, SD_FLAG_CMD_APPLY_AUTO);
 
          CONFIG_BOOL(
                list, list_info,

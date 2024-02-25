@@ -191,23 +191,27 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_RESTART_RETROARCH,
-   "Redémarrer RetroArch"
+   "Redémarrer"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_RESTART_RETROARCH,
-   "Redémarrer le programme."
+   "Redémarrer l'application RetroArch."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_QUIT_RETROARCH,
-   "Quitter RetroArch"
+   "Quitter"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_QUIT_RETROARCH,
-   "Quitter le programme."
+   "Quitter l'application RetroArch. L'enregistrement de la configuration à la sortie est activé."
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_QUIT_RETROARCH_NOSAVE,
+   "Quitter l'application RetroArch. L'enregistrement de la configuration à la sortie est désactivé."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_QUIT_RETROARCH,
-   "Quitter RetroArch. Forcer à quitter le programme de toutes les manières matérielles (SIGKILL, etc.) mettra fin au processus de RetroArch sans enregistrer la configuration, etc. Sur les variantes d'Unix, SIGINT/SIGTERM permet une désinitialisation propre."
+   "Quitter RetroArch. Forcer à quitter le programme de toutes les manières matérielles (SIGKILL, etc.) mettra fin au processus de RetroArch sans enregistrer la configuration dans tous les cas. Sur les variantes d'Unix, SIGINT/SIGTERM permet une désinitialisation propre incluant la sauvegarde de la configuration si activée."
    )
 
 /* Main Menu > Load Core */
@@ -514,6 +518,14 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE,
    "Firmware(s) "
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE_IN_CONTENT_DIRECTORY,
+   "- Remarque : 'Fichiers système avec le contenu' est actuellement activé."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE_PATH,
+   "- Recherche dans : '%s'"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MISSING_REQUIRED,
@@ -1474,7 +1486,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_JOYPAD_DRIVER,
-   "Pilote de manettes à utiliser."
+   "Pilote de manettes à utiliser. (Redémarrage requis)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_JOYPAD_DRIVER_DINPUT,
@@ -1733,7 +1745,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_MENU_DRIVER,
-   "Pilote de menu à utiliser."
+   "Pilote de menu à utiliser. (Redémarrage requis)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_MENU_DRIVER_XMB,
@@ -1852,11 +1864,163 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_VIDEO_BLACK_FRAME_INSERTION,
-   "Insérer une image noire entre les images. Utile pour certains écrans à fréquence de rafraîchissement élevée pour éliminer la rémanence."
+   "Insérer une ou plusieurs images noires entre les images. Peut considérablement réduire le flou de mouvement en émulant le balayage CRT, mais au détriment de la luminosité. Ne pas combiner avec les options Intervalle d'échange > 1, sous-trames, Retard d'images ou Synchroniser à la fréquence d'affichage exacte du contenu."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_VIDEO_BLACK_FRAME_INSERTION,
-   "Insère une image noire entre les images. Utile pour les moniteurs à 120 Hz pour jouer à du contenu à 60 Hz avec rémanence éliminée. La fréquence de rafraîchissement vidéo devrait toujours être configurée comme s'il s'agissait d'un moniteur à 60 Hz (fréquence de rafraîchissement divisée par 2)."
+   "Insérer une ou plusieurs images noires entre les images pour une plus grande clarté de mouvement. Utilisez uniquement l'option désignée pour votre fréquence de rafraîchissement actuelle. Ne pas utiliser à des fréquences de rafraîchissement qui ne sont pas des multiples de 60 Hz tels que 144 Hz, 165 Hz, etc. Ne pas combiner avec les options Intervalle d'échange > 1, sous-trames, Retard d'images ou Synchroniser à la fréquence d'affichage exacte du contenu. Laisser l'option VRR (fréque[...]"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_OFF,
+   "Aucune"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_120,
+   "1 - Pour une fréquence de rafraîchissement à 120 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_180,
+   "2 - Pour une fréquence de rafraîchissement à 180 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_240,
+   "3 - Pour une fréquence de rafraîchissement à 240 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_300,
+   "4 - Pour une fréquence de rafraîchissement à 300 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_360,
+   "5 - Pour une fréquence de rafraîchissement à 360 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_420,
+   "6 - Pour une fréquence de rafraîchissement à 420 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_480,
+   "7 - Pour une fréquence de rafraîchissement à 480 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_540,
+   "8 - Pour une fréquence de rafraîchissement à 540 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_600,
+   "9 - Pour une fréquence de rafraîchissement à 600 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_660,
+   "10 - Pour une fréquence de rafraîchissement à 660 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_720,
+   "11 - Pour une fréquence de rafraîchissement à 720 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_780,
+   "12 - Pour une fréquence de rafraîchissement à 780 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_840,
+   "13 - Pour une fréquence de rafraîchissement à 840 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_900,
+   "14 - Pour une fréquence de rafraîchissement à 900 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_960,
+   "15 - Pour une fréquence de rafraîchissement à 960 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BFI_DARK_FRAMES,
+   "Insertion d'images noir - Images sombres"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_VIDEO_BFI_DARK_FRAMES,
+   "Ajuster le nombre d'images noires dans la séquence de balayage BFI. Plus équivaut à une plus grande clarté de mouvement, moins équivaut à une plus grande luminosité. Non applicable à 120 Hz car il n'y a qu'1 image BFI pour fonctionner au total. Les réglages plus élevés que possible vous limiteront au maximum possible pour la fréquence de rafraîchissement choisie."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_HELP_VIDEO_BFI_DARK_FRAMES,
+   "Ajuste le nombre d'images affichées dans la séquence BFI qui sont noires. Plus d'images noires augmente la clarté de mouvement mais réduit la luminosité. Non applicable à 120 Hz car il n'y a qu'une seule image de 60 Hz supplémentaire, elle doit donc être noire sinon le BFI ne serait pas actif du tout."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES,
+   "Sous-trames du Shader"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_VIDEO_SHADER_SUBFRAMES,
+   "Insérer une ou plusieurs images noires entre les images. Permet aux shaders de créer des effets qui tournent à une fréquence d'image plus élevée que la vitesse réelle du contenu. Doit être réglé sur les Hz de l'écran actuel. Ne pas combiner avec Intervalle d'échange > 1, BFI, Retard d'image ou Synchroniser à la fréquence d'affichage exacte du contenu."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_HELP_VIDEO_SHADER_SUBFRAMES,
+   "Insérer une ou plusieurs images noires entre les images pour chaque effet de shader possible qui est conçu pour tourner plus rapidement que la vitesse du contenu. Utilisez uniquement l'option désignée pour votre fréquence de rafraîchissement actuelle. Ne pas utiliser à des fréquences de rafraîchissement qui ne sont pas des multiples de 60 Hz tels que 144 Hz, 165 Hz, etc. Ne pas combiner avec les options Intervalle d'échange > 1, BFI, Retard d'images ou Synchroniser à la fréquence d'a[...]"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_OFF,
+   "Aucune"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_120,
+   "2 - Pour une fréquence de rafraîchissement à 120 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_180,
+   "3 - Pour une fréquence de rafraîchissement à 180 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_240,
+   "4 - Pour une fréquence de rafraîchissement à 240 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_300,
+   "5 - Pour une fréquence de rafraîchissement à 300 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_360,
+   "6 - Pour une fréquence de rafraîchissement à 360 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_420,
+   "7 - Pour une fréquence de rafraîchissement à 420 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_480,
+   "8 - Pour une fréquence de rafraîchissement à 480 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_540,
+   "9 - Pour une fréquence de rafraîchissement à 540 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_600,
+   "10 - Pour une fréquence de rafraîchissement à 600 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_660,
+   "11 - Pour une fréquence de rafraîchissement à 660 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_720,
+   "12 - Pour une fréquence de rafraîchissement à 720 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_780,
+   "13 - Pour une fréquence de rafraîchissement à 780 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_840,
+   "14 - Pour une fréquence de rafraîchissement à 840 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_900,
+   "15 - Pour une fréquence de rafraîchissement à 900 Hz"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_960,
+   "16 - Pour une fréquence de rafraîchissement à 960 Hz"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_VIDEO_GPU_SCREENSHOT,
@@ -3148,6 +3312,10 @@ MSG_HASH(
    "Classique"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_TURBO_MODE_CLASSIC_TOGGLE,
+   "Classique (activer/désactiver)"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_TURBO_MODE_SINGLEBUTTON,
    "Touche simple (activer/désactiver)"
    )
@@ -3158,6 +3326,10 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_TURBO_MODE_CLASSIC,
    "Mode classique, fonctionnement à deux touches. Maintenez une touche enfoncée et pressez la touche Turbo pour activer la séquence de déclenchement.\nLa touche Turbo peut être assignée dans Réglages/Entrées/Touches du port 1."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_HELP_TURBO_MODE_CLASSIC_TOGGLE,
+   "Mode activer/désactiver classique, fonctionnement à deux touches. Maintenez une touche et appuyez sur la touche Turbo pour activer le turbo pour ce bouton. Pour désactiver le turbo : maintenez le bouton et appuyez à nouveau sur le bouton Turbo.\nLe bouton Turbo peut être assigné dans Réglages/Entrées/Port 1."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_TURBO_MODE_SINGLEBUTTON,
@@ -3244,7 +3416,7 @@ MSG_HASH(
    "Solution à la déconnexion pour Android"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_ANDROID_INPUT_DISCONNECT_WORKAROUND,
+   MENU_ENUM_SUBLABEL_ANDROID_INPUT_DISCONNECT_WORKAROUND,
    "Solution pour les manettes qui se déconnectent et se reconnectent. Empêche 2 joueurs d'avoir les mêmes manettes."
    )
 MSG_HASH(
@@ -3347,6 +3519,14 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_SUBLABEL_INPUT_HOTKEY_BLOCK_DELAY,
    "Ajouter un délai en images avant que l'entrée normale ne soit bloquée après avoir appuyé sur la touche 'Raccourcis activés' assignée. Permet l'entrée normale de la touche 'Raccourcis activés' lorsqu'elle est mappée à une autre action (RetroManette 'Select' par exemple)."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_INPUT_HOTKEY_DEVICE_MERGE,
+   "Fusion du type de périphérique pour la touche de raccourcis"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_HOTKEY_DEVICE_MERGE,
+   "Bloquer toutes les touches de raccourcis des types de périphériques clavier et manette si l'un ou l'autre des types à l'option 'Raccourcis activés' activée."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_MENU_ENUM_TOGGLE_GAMEPAD_COMBO,
@@ -3826,6 +4006,10 @@ MSG_HASH(
    "Numéro du périphérique"
    )
 MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_DEVICE_INDEX,
+   "La manette physique telle que reconnue par RetroArch."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_REMAP_PORT,
    "Port affecté"
    )
@@ -3838,16 +4022,32 @@ MSG_HASH(
    "Assigner toutes les touches"
    )
 MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_BIND_ALL,
+   "Assigner toutes les directions et touches, l'une après l'autre, dans l'ordre dans lequel elles apparaissent dans ce menu."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_BIND_DEFAULT_ALL,
    "Tout assigner par défaut"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_BIND_DEFAULTS,
+   "Effacer les réglages d'assignation des entrées à leurs valeurs par défaut."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_SAVE_AUTOCONFIG,
    "Sauvegarder la configuration automatique"
    )
 MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_SAVE_AUTOCONFIG,
+   "Enregistre un fichier de configuration automatique appliqué automatiquement chaque fois que cette manette est détectée à nouveau."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_MOUSE_INDEX,
    "Numéro de la souris"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_MOUSE_INDEX,
+   "La souris physique telle que reconnue par RetroArch."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_JOYPAD_B,
@@ -4251,6 +4451,14 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_SUBLABEL_AUTO_REMAPS_ENABLE,
    "Charger des contrôles personnalisés au démarrage."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_INITIAL_DISK_CHANGE_ENABLE,
+   "Charger automatiquement les fichiers d'indexation du disque initial"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INITIAL_DISK_CHANGE_ENABLE,
+   "Changer pour le dernier disque utilisé lors du démarrage de contenu multi-disques."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_AUTO_SHADERS_ENABLE,
@@ -7590,11 +7798,11 @@ MSG_HASH( /* FIXME Not RGUI specific */
    )
 MSG_HASH( /* FIXME Not RGUI specific */
    MENU_ENUM_LABEL_VALUE_RGUI_CONFIG_DIRECTORY,
-   "Fichiers de configuration "
+   "Fichiers de configuration"
    )
 MSG_HASH( /* FIXME Not RGUI specific */
    MENU_ENUM_SUBLABEL_RGUI_CONFIG_DIRECTORY,
-   "Définir le dossier de départ du navigateur de configurations du menu."
+   "Le fichier de configuration par défaut est conservé ici."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_LIBRETRO_DIR_PATH,
@@ -10504,6 +10712,38 @@ MSG_HASH(
    "Aucune"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X2,
+   "2x"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X3,
+   "3x"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X4,
+   "4x"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X5,
+   "5x"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X6,
+   "6x"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X7,
+   "7x"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X8,
+   "8x"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_RGUI_UPSCALE_X9,
+   "9x"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_RGUI_ASPECT_RATIO_16_9_CENTRE,
    "16:9 (centré)"
    )
@@ -12954,6 +13194,10 @@ MSG_HASH(
    "Configuration automatique enregistrée avec succès."
    )
 MSG_HASH(
+   MSG_AUTOCONFIG_FILE_SAVED_SUCCESSFULLY_NAMED,
+   "Le profil de manette a été enregistré dans le dossier des profils de manettes en tant que\n\"%s\""
+   )
+MSG_HASH(
    MSG_AUTOSAVE_FAILED,
    "Impossible d'initialiser l'enregistrement automatique."
    )
@@ -14115,7 +14359,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MSG_FAILED_TO_SET_INITIAL_DISK,
-   "Impossible de sélectionner le dernier disque utilisé..."
+   "Impossible de sélectionner le dernier disque utilisé."
    )
 MSG_HASH(
    MSG_FAILED_TO_CONNECT_TO_CLIENT,
@@ -15081,4 +15325,12 @@ MSG_HASH(
 MSG_HASH(
    MSG_IOS_TOUCH_MOUSE_DISABLED,
    "La souris tactile est désactivée"
+   )
+MSG_HASH(
+   MSG_ACCESSIBILITY_STARTUP,
+   "Accessibilité RétroArch activée. Menu principal Charger un cœur."
+   )
+MSG_HASH(
+   MSG_AI_SERVICE_STOPPED,
+   "arrêté."
    )

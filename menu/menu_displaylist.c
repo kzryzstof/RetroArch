@@ -713,11 +713,41 @@ static int menu_displaylist_parse_core_info(
    if (core_info->firmware_count > 0)
    {
       core_info_ctx_firmware_t firmware_info;
-      bool update_missing_firmware   = false;
-      bool set_missing_firmware      = false;
+      uint8_t flags                   = content_get_flags();
+      bool update_missing_firmware    = false;
+      bool set_missing_firmware       = false;
+      bool systemfiles_in_content_dir = settings->bools.systemfiles_in_content_dir;
+      bool content_is_inited          = flags & CONTENT_ST_FLAG_IS_INITED;
+      char tmp_path[PATH_MAX_LENGTH];
 
       firmware_info.path             = core_info->path;
-      firmware_info.directory.system = settings->paths.directory_system;
+
+      /* If 'System Files are in Content Directory' is enabled and content is inited,
+       * adjust the path to check for firmware files */
+      if (systemfiles_in_content_dir && content_is_inited)
+      {
+         strlcpy(tmp_path, path_get(RARCH_PATH_CONTENT), sizeof(tmp_path));
+         path_basedir(tmp_path);
+
+         /* If content path is empty, fall back to global system dir path */
+         if (string_is_empty(tmp_path))
+            firmware_info.directory.system = settings->paths.directory_system;
+         else
+         {
+            size_t len       = strlen(tmp_path);
+
+            /* Removes trailing slash (unless root dir), doesn't really matter
+             * but it's more consistent with how the path is stored and
+             * displayed without 'System Files are in Content Directory' */
+            if (     string_count_occurrences_single_character(tmp_path, PATH_DEFAULT_SLASH_C()) > 1
+                  && tmp_path[len - 1] == PATH_DEFAULT_SLASH_C())
+               tmp_path[len - 1] = '\0';
+
+            firmware_info.directory.system = tmp_path;
+         }
+      }
+      else
+         firmware_info.directory.system = settings->paths.directory_system;
 
       update_missing_firmware         = core_info_list_update_missing_firmware(&firmware_info, &set_missing_firmware);
 
@@ -740,6 +770,25 @@ static int menu_displaylist_parse_core_info(
          tmp[  len] = ':';
          tmp[++len] = ' ';
          tmp[++len] = '\0';
+         if (menu_entries_append(list, tmp, "",
+               MENU_ENUM_LABEL_CORE_INFO_ENTRY, MENU_SETTINGS_CORE_INFO_NONE, 0, 0, NULL))
+            count++;
+
+         /* If 'System Files are in Content Directory' is enabled, let's add a note about it. */
+         if (systemfiles_in_content_dir)
+         {
+            strlcpy(tmp,
+                  msg_hash_to_str(MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE_IN_CONTENT_DIRECTORY), 
+                  sizeof(tmp));
+            if (menu_entries_append(list, tmp, "",
+                  MENU_ENUM_LABEL_CORE_INFO_ENTRY, MENU_SETTINGS_CORE_INFO_NONE, 0, 0, NULL))
+               count++;
+         }
+
+         /* Show the path that was checked */
+         snprintf(tmp, sizeof(tmp),
+               msg_hash_to_str(MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE_PATH), 
+               firmware_info.directory.system);
          if (menu_entries_append(list, tmp, "",
                MENU_ENUM_LABEL_CORE_INFO_ENTRY, MENU_SETTINGS_CORE_INFO_NONE, 0, 0, NULL))
             count++;
@@ -6833,6 +6882,10 @@ unsigned menu_displaylist_build_list(
                      MENU_ENUM_LABEL_INPUT_HOTKEY_BLOCK_DELAY,
                      PARSE_ONLY_UINT, false) == 0)
                count++;
+            if (MENU_DISPLAYLIST_PARSE_SETTINGS_ENUM(list,
+                     MENU_ENUM_LABEL_INPUT_HOTKEY_DEVICE_MERGE,
+                     PARSE_ONLY_BOOL, false) == 0)
+               count++;
 
             /* All other binds come last */
             for (i = 0; i < RARCH_BIND_LIST_END; i++)
@@ -9360,6 +9413,7 @@ unsigned menu_displaylist_build_list(
             bool video_vsync          = settings->bools.video_vsync;
             bool video_hard_sync      = settings->bools.video_hard_sync;
             bool video_wait_swap      = settings->bools.video_waitable_swapchains;
+            unsigned bfi              = settings->uints.video_black_frame_insertion;
 
             if (MENU_DISPLAYLIST_PARSE_SETTINGS_ENUM(list,
                      MENU_ENUM_LABEL_VIDEO_VSYNC,
@@ -9372,10 +9426,25 @@ unsigned menu_displaylist_build_list(
                         MENU_ENUM_LABEL_VIDEO_SWAP_INTERVAL,
                         PARSE_ONLY_UINT, false) == 0)
                   count++;
+               if (video_driver_test_all_flags(GFX_CTX_FLAGS_SUBFRAME_SHADERS))
+               {
+                  if (MENU_DISPLAYLIST_PARSE_SETTINGS_ENUM(list,
+                           MENU_ENUM_LABEL_VIDEO_SHADER_SUBFRAMES,
+                           PARSE_ONLY_UINT, false) == 0)
+                     count++;
+               }
                if (MENU_DISPLAYLIST_PARSE_SETTINGS_ENUM(list,
                         MENU_ENUM_LABEL_VIDEO_BLACK_FRAME_INSERTION,
                         PARSE_ONLY_UINT, false) == 0)
                   count++;
+
+               if (bfi > 0)
+               {
+                  if (MENU_DISPLAYLIST_PARSE_SETTINGS_ENUM(list,
+                           MENU_ENUM_LABEL_VIDEO_BFI_DARK_FRAMES,
+                           PARSE_ONLY_UINT, false) == 0)
+                     count++;
+               }
                if (MENU_DISPLAYLIST_PARSE_SETTINGS_ENUM(list,
                         MENU_ENUM_LABEL_VIDEO_ADAPTIVE_VSYNC,
                         PARSE_ONLY_BOOL, false) == 0)
@@ -10768,12 +10837,13 @@ unsigned menu_displaylist_build_list(
       case DISPLAYLIST_CONFIGURATION_SETTINGS_LIST:
          {
             menu_displaylist_build_info_t build_list[] = {
-               {MENU_ENUM_LABEL_CONFIG_SAVE_ON_EXIT,   PARSE_ONLY_BOOL},
-               {MENU_ENUM_LABEL_REMAP_SAVE_ON_EXIT,    PARSE_ONLY_BOOL},
-               {MENU_ENUM_LABEL_GAME_SPECIFIC_OPTIONS, PARSE_ONLY_BOOL},
-               {MENU_ENUM_LABEL_AUTO_OVERRIDES_ENABLE, PARSE_ONLY_BOOL},
-               {MENU_ENUM_LABEL_AUTO_REMAPS_ENABLE,    PARSE_ONLY_BOOL},
-               {MENU_ENUM_LABEL_GLOBAL_CORE_OPTIONS,   PARSE_ONLY_BOOL},
+               {MENU_ENUM_LABEL_CONFIG_SAVE_ON_EXIT,        PARSE_ONLY_BOOL},
+               {MENU_ENUM_LABEL_REMAP_SAVE_ON_EXIT,         PARSE_ONLY_BOOL},
+               {MENU_ENUM_LABEL_GAME_SPECIFIC_OPTIONS,      PARSE_ONLY_BOOL},
+               {MENU_ENUM_LABEL_AUTO_OVERRIDES_ENABLE,      PARSE_ONLY_BOOL},
+               {MENU_ENUM_LABEL_AUTO_REMAPS_ENABLE,         PARSE_ONLY_BOOL},
+               {MENU_ENUM_LABEL_INITIAL_DISK_CHANGE_ENABLE, PARSE_ONLY_BOOL},
+               {MENU_ENUM_LABEL_GLOBAL_CORE_OPTIONS,        PARSE_ONLY_BOOL},
             };
 
             for (i = 0; i < ARRAY_SIZE(build_list); i++)

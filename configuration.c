@@ -33,6 +33,7 @@
 #endif
 
 #include "file_path_special.h"
+#include "command.h"
 #include "configuration.h"
 #include "content.h"
 #include "config.def.h"
@@ -1729,6 +1730,7 @@ static struct config_bool_setting *populate_settings_bool(
    SETTING_BOOL("game_specific_options",         &settings->bools.game_specific_options, true, DEFAULT_GAME_SPECIFIC_OPTIONS, false);
    SETTING_BOOL("auto_overrides_enable",         &settings->bools.auto_overrides_enable, true, DEFAULT_AUTO_OVERRIDES_ENABLE, false);
    SETTING_BOOL("auto_remaps_enable",            &settings->bools.auto_remaps_enable, true, DEFAULT_AUTO_REMAPS_ENABLE, false);
+   SETTING_BOOL("initial_disk_change_enable",    &settings->bools.initial_disk_change_enable, true, DEFAULT_INITIAL_DISK_CHANGE_ENABLE, false);   
    SETTING_BOOL("global_core_options",           &settings->bools.global_core_options, true, DEFAULT_GLOBAL_CORE_OPTIONS, false);
    SETTING_BOOL("auto_shaders_enable",           &settings->bools.auto_shaders_enable, true, DEFAULT_AUTO_SHADERS_ENABLE, false);
    SETTING_BOOL("scan_without_core_match",       &settings->bools.scan_without_core_match, true, DEFAULT_SCAN_WITHOUT_CORE_MATCH, false);
@@ -2087,6 +2089,7 @@ static struct config_bool_setting *populate_settings_bool(
    SETTING_BOOL("input_allow_turbo_dpad",        &settings->bools.input_allow_turbo_dpad, true, DEFAULT_ALLOW_TURBO_DPAD, false);
    SETTING_BOOL("input_auto_mouse_grab",         &settings->bools.input_auto_mouse_grab, true, false, false);
    SETTING_BOOL("input_remap_binds_enable",      &settings->bools.input_remap_binds_enable, true, true, false);
+   SETTING_BOOL("input_hotkey_device_merge",     &settings->bools.input_hotkey_device_merge, true, DEFAULT_INPUT_HOTKEY_DEVICE_MERGE, false);
    SETTING_BOOL("all_users_control_menu",        &settings->bools.input_all_users_control_menu, true, DEFAULT_ALL_USERS_CONTROL_MENU, false);
 #ifdef HAVE_MENU
    SETTING_BOOL("menu_swap_ok_cancel_buttons",   &settings->bools.input_menu_swap_ok_cancel_buttons, true, DEFAULT_MENU_SWAP_OK_CANCEL_BUTTONS, false);
@@ -2403,6 +2406,8 @@ static struct config_uint_setting *populate_settings_uint(
    SETTING_UINT("video_max_swapchain_images",    &settings->uints.video_max_swapchain_images, true, DEFAULT_MAX_SWAPCHAIN_IMAGES, false);
    SETTING_UINT("video_max_frame_latency",       &settings->uints.video_max_frame_latency, true, DEFAULT_MAX_FRAME_LATENCY, false);
    SETTING_UINT("video_black_frame_insertion",   &settings->uints.video_black_frame_insertion, true, DEFAULT_BLACK_FRAME_INSERTION, false);
+   SETTING_UINT("video_bfi_dark_frames",         &settings->uints.video_bfi_dark_frames, true, DEFAULT_BFI_DARK_FRAMES, false);
+   SETTING_UINT("video_shader_subframes",        &settings->uints.video_shader_subframes, true, DEFAULT_SHADER_SUBFRAMES, false);
    SETTING_UINT("video_swap_interval",           &settings->uints.video_swap_interval, true, DEFAULT_SWAP_INTERVAL, false);
    SETTING_UINT("video_rotation",                &settings->uints.video_rotation, true, ORIENTATION_NORMAL, false);
    SETTING_UINT("screen_orientation",            &settings->uints.screen_orientation, true, ORIENTATION_NORMAL, false);
@@ -4457,6 +4462,10 @@ bool config_load_override_file(const char *config_path)
  */
 bool config_unload_override(void)
 {
+   settings_t *settings = config_st;
+   bool fullscreen_prev = settings->bools.video_fullscreen;
+   uint32_t flags       = runloop_get_flags();
+
    runloop_state_get_ptr()->flags &= ~RUNLOOP_FLAG_OVERRIDES_ACTIVE;
    path_clear(RARCH_PATH_CONFIG_OVERRIDE);
 
@@ -4467,6 +4476,20 @@ bool config_unload_override(void)
    if (!config_load_file(global_get_ptr(),
             path_get(RARCH_PATH_CONFIG), config_st))
       return false;
+
+   if (settings->bools.video_fullscreen != fullscreen_prev)
+   {
+      /* This is for 'win32_common.c', so we don't save
+       * fullscreen size and position if we're switching
+       * back to windowed mode. 
+       * Might be useful for other devices as well? */
+      if (      settings->bools.video_window_save_positions
+            && !settings->bools.video_fullscreen)
+         settings->skip_window_positions = true;
+
+      if (flags & RUNLOOP_FLAG_CORE_RUNNING)
+         command_event(CMD_EVENT_REINIT, NULL);
+   }
 
    RARCH_LOG("[Overrides]: Configuration overrides unloaded, original configuration restored.\n");
 
@@ -4916,14 +4939,9 @@ static void input_config_save_keybinds_user_override(config_file_t *conf,
    }
 }
 
-/**
- * config_save_autoconf_profile:
- * @device_name       : Input device name
- * @user              : Controller number to save
- * Writes a controller autoconf file to disk.
- **/
-bool config_save_autoconf_profile(const
-      char *device_name, unsigned user)
+void config_get_autoconf_profile_filename(
+      const char *device_name, unsigned user, 
+      char *buf, size_t len_buf)
 {
    static const char* invalid_filename_chars[] = {
       /* https://support.microsoft.com/en-us/help/905231/information-about-the-characters-that-you-cannot-use-in-site-names--fo */
@@ -4932,12 +4950,7 @@ bool config_save_autoconf_profile(const
    };
    size_t len;
    unsigned i;
-   char buf[PATH_MAX_LENGTH];
-   char autoconf_file[PATH_MAX_LENGTH];
-   config_file_t *conf                  = NULL;
-   int32_t pid_user                     = 0;
-   int32_t vid_user                     = 0;
-   bool ret                             = false;
+
    settings_t *settings                 = config_st;
    const char *autoconf_dir             = settings->paths.directory_autoconfig;
    const char *joypad_driver_fallback   = settings->arrays.input_joypad_driver;
@@ -4980,15 +4993,66 @@ bool config_save_autoconf_profile(const
    }
 
    /* Generate autoconfig file path */
-   fill_pathname_join_special(buf, autoconf_dir, joypad_driver, sizeof(buf));
+   fill_pathname_join_special(buf, autoconf_dir, joypad_driver, len_buf);
 
-   if (path_is_directory(buf))
-      len = fill_pathname_join_special(autoconf_file, buf,
-            sanitised_name, sizeof(autoconf_file));
+   /* Driver specific autoconf dir may not exist, if autoconfs are not downloaded. */
+   if (!path_is_directory(buf))
+   {
+      len = strlcpy(buf, sanitised_name, len_buf);
+   }
    else
-      len = fill_pathname_join_special(autoconf_file, autoconf_dir,
-            sanitised_name, sizeof(autoconf_file));
-   strlcpy(autoconf_file + len, ".cfg", sizeof(autoconf_file) - len);
+   {
+      len = fill_pathname_join_special(buf, joypad_driver, sanitised_name, len_buf);
+   }
+   strlcpy(buf + len, ".cfg", len_buf - len);
+
+end:
+   if (sanitised_name)
+      free(sanitised_name);
+
+}
+/**
+ * config_save_autoconf_profile:
+ * @device_name       : Input device name
+ * @user              : Controller number to save
+ * Writes a controller autoconf file to disk.
+ **/
+bool config_save_autoconf_profile(const
+      char *device_name, unsigned user)
+{
+   size_t len;
+   unsigned i;
+   char buf[PATH_MAX_LENGTH];
+   char autoconf_file[PATH_MAX_LENGTH];
+   config_file_t *conf                  = NULL;
+   int32_t pid_user                     = 0;
+   int32_t vid_user                     = 0;
+   bool ret                             = false;
+   settings_t *settings                 = config_st;
+   const char *autoconf_dir             = settings->paths.directory_autoconfig;
+   const char *joypad_driver_fallback   = settings->arrays.input_joypad_driver;
+   const char *joypad_driver            = NULL;
+
+   if (string_is_empty(device_name))
+      goto end;
+
+   /* Get currently set joypad driver */
+   joypad_driver = input_config_get_device_joypad_driver(user);
+   if (string_is_empty(joypad_driver))
+   {
+      /* This cannot happen, but if we reach this
+       * point without a driver being set for the
+       * current input device then use the value
+       * from the settings struct as a fallback */
+      joypad_driver = joypad_driver_fallback;
+
+      if (string_is_empty(joypad_driver))
+         goto end;
+   }
+
+   /* Generate autoconfig file path */
+   config_get_autoconf_profile_filename(device_name, user, buf, sizeof(buf));
+   fill_pathname_join_special(autoconf_file, autoconf_dir, buf, sizeof(autoconf_file));
 
    /* Open config file */
    if (     !(conf = config_file_new_from_path_to_string(autoconf_file))
@@ -5030,9 +5094,6 @@ bool config_save_autoconf_profile(const
    ret = config_file_write(conf, autoconf_file, false);
 
 end:
-   if (sanitised_name)
-      free(sanitised_name);
-
    if (conf)
       config_file_free(conf);
 

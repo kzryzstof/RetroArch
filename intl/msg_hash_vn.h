@@ -126,10 +126,6 @@ MSG_HASH(
    "Mở Desktop Menu cổ điển."
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_MENU_DISABLE_KIOSK_MODE,
-   "Vô hiệu hóa chế độ Kiosk (Yêu cầu khởi động lại)"
-   )
-MSG_HASH(
    MENU_ENUM_SUBLABEL_MENU_DISABLE_KIOSK_MODE,
    "Hiện tất cả cấu hình cài đặt liên quan."
    )
@@ -183,19 +179,11 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_RESTART_RETROARCH,
-   "Khởi động lại RetroArch"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_RESTART_RETROARCH,
-   "Khởi động lại chương trình."
+   "Khởi động lại"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_QUIT_RETROARCH,
-   "Thoát RetroArch"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_QUIT_RETROARCH,
-   "Thoát khỏi ứng dụng."
+   "Thoát"
    )
 
 /* Main Menu > Load Core */
@@ -1051,10 +1039,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MENU_FILE_BROWSER_SETTINGS,
    "Quản lý tập tin"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_MENU_FILE_BROWSER_SETTINGS,
-   "Thay đổi cài đặt quản lý tệp tin."
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_FRAME_THROTTLE_SETTINGS,

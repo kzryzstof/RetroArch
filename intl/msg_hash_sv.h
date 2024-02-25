@@ -134,10 +134,6 @@ MSG_HASH(
    "Öppna traditionell skrivbordsmeny."
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_MENU_DISABLE_KIOSK_MODE,
-   "Inaktivera Kioskläge (omstart krävs)"
-   )
-MSG_HASH(
    MENU_ENUM_SUBLABEL_MENU_DISABLE_KIOSK_MODE,
    "Visar även dolda konfigurationsrelaterade inställningar."
    )
@@ -183,23 +179,11 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_RESTART_RETROARCH,
-   "Starta om RetroArch"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_RESTART_RETROARCH,
-   "Startar om programmet."
+   "Starta om"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_QUIT_RETROARCH,
-   "Avsluta RetroArch"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_QUIT_RETROARCH,
-   "Avslutar programmet."
-   )
-MSG_HASH(
-   MENU_ENUM_LABEL_HELP_QUIT_RETROARCH,
-   "Avsluta RetroArch. Dödas programmet på något drastiskt sätt (SIGKILL, etc.) kommer RetroArch att avslutas utan att spara konfigurationen, etc. På Unix-liknande system tillåter SIGINT/SIGTERM en ordentlig avstängning."
+   "Avsluta"
    )
 
 /* Main Menu > Load Core */
@@ -1205,10 +1189,6 @@ MSG_HASH(
    "Filhanterare"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_MENU_FILE_BROWSER_SETTINGS,
-   "Ändra inställningar för filhanterare."
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_HELP_FILE_BROWSER_CONFIG,
    "Konfigurationsfil."
    )
@@ -1439,10 +1419,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_JOYPAD_DRIVER,
    "Spelkontroll"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_JOYPAD_DRIVER,
-   "Ange drivrutin för spelkontroll."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_JOYPAD_DRIVER_DINPUT,
@@ -1692,10 +1668,6 @@ MSG_HASH(
    "Meny"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_MENU_DRIVER,
-   "Meny-drivrutin att använda."
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_HELP_MENU_DRIVER_XMB,
    "XMB är ett RetroArch GUI som ser ut som en 7:e generationens konsolmeny. Det kan stödja samma funktioner som Ozone."
    )
@@ -1801,10 +1773,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION,
    "Insättning av svart bildruta"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_VIDEO_BLACK_FRAME_INSERTION,
-   "Sätt in en svart bildruta mellan bildrutor. Användbar på vissa skärmar med hög uppdateringsfrekvens för att eliminera spökbilder."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_VIDEO_GPU_SCREENSHOT,
@@ -1961,10 +1929,6 @@ MSG_HASH(
    "Vilken bildskärm att föredra. 0 (standard) betyder att ingen speciell bildskärm är att föredra, 1 och uppåt (1 är den första bildskärmen), föreslår att RetroArch använder just den bildskärmen."
    )
 #if defined (WIIU)
-MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_VIDEO_WIIU_PREFER_DRC,
-   "Optimera för Wii U-GamePad (omstart krävs)"
-   )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_VIDEO_WIIU_PREFER_DRC,
    "Använd en exakt 2x skala av GamePad som visningsport. Inaktivera för att visa med den ursprungliga TV-upplösningen."
@@ -2298,10 +2262,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_SUBLABEL_VIDEO_VIEWPORT_CUSTOM_HEIGHT,
    "Anpassad visningsporthöjd som används om bildformatet är inställt på 'Anpassa bildformat'."
-   )
-MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_VIDEO_CROP_OVERSCAN,
-   "Beskär överskanning (omstart krävs)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_VIDEO_CROP_OVERSCAN,
@@ -2873,10 +2833,6 @@ MSG_HASH(
    )
 #if defined(HAVE_DINPUT) || defined(HAVE_WINRAWINPUT)
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_INPUT_NOWINKEY_ENABLE,
-   "Inaktivera Windows kortkommandon (omstart krävs)"
-   )
-MSG_HASH(
    MENU_ENUM_SUBLABEL_INPUT_NOWINKEY_ENABLE,
    "Behåll kombinationer med Win-tangenten inuti programmet."
    )
@@ -3062,10 +3018,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_ANDROID_INPUT_DISCONNECT_WORKAROUND,
    "Åtgärd för Android kopplas från"
-   )
-MSG_HASH(
-   MENU_ENUM_LABEL_ANDROID_INPUT_DISCONNECT_WORKAROUND,
-   "Åtgärd för spelkontroller son kopplar från och återansluter. Hindrar 2 spelare med identiska kontroller."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_QUIT_PRESS_TWICE,
@@ -4062,16 +4014,8 @@ MSG_HASH(
    "Visa dolda filer och mappar"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_SHOW_HIDDEN_FILES,
-   "Visa dolda filer och mappar i filhanteraren."
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_NAVIGATION_BROWSER_FILTER_SUPPORTED_EXTENSIONS_ENABLE,
    "Filtrera okända filformat"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_NAVIGATION_BROWSER_FILTER_SUPPORTED_EXTENSIONS_ENABLE,
-   "Visa bara filer med filformat som det finns stöd för."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_USE_BUILTIN_PLAYER,
@@ -4340,10 +4284,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_OSK_OVERLAY_PRESET,
    "Förinställt tangentbordsöverlager"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_OSK_OVERLAY_PRESET,
-   "Välj ett tangentbordsöverlager med filhanteraren."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_OSK_OVERLAY_AUTO_SCALE,
@@ -4789,10 +4729,6 @@ MSG_HASH(
    "Scrollfördröjning i meny"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_DESKTOP_MENU_ENABLE,
-   "Skrivbordsmeny (omstart krävs)"
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_UI_COMPANION_TOGGLE,
    "Öppna skrivbordsmenyn vid start"
    )
@@ -4918,10 +4854,6 @@ MSG_HASH(
    "Visa 'Inställningar'"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_SETTINGS,
-   "Visa menyn 'Inställningar'. (Omstart krävs på Ozone/XMB)"
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_SETTINGS_PASSWORD,
    "Ange lösenord för 'Inställningar'"
    )
@@ -4930,40 +4862,20 @@ MSG_HASH(
    "Visa 'Favoriter'"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_FAVORITES,
-   "Visa menyn 'Favoriter'. (Omstart krävs på Ozone/XMB)"
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_IMAGES,
    "Visa 'Bilder'"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_IMAGES,
-   "Visa menyn 'Bilder'. (Omstart krävs på Ozone/XMB)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_MUSIC,
    "Visa 'Musik'"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_MUSIC,
-   "Visa menyn 'Musik'. (Omstart krävs på Ozone/XMB)"
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_VIDEO,
    "Visa 'Videor'"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_VIDEO,
-   "Visa menyn 'Video'. (Omstart krävs på Ozone/XMB)"
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_NETPLAY,
    "Visa 'Netplay'"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_NETPLAY,
-   "Visa menyn 'Netplay'. (Omstart krävs på Ozone/XMB)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_HISTORY,
@@ -4972,10 +4884,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_ADD,
    "Visa 'Importera Innehåll'"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_ADD,
-   "Visa menyn 'Importera innehåll'. (Omstart krävs på Ozone/XMB)"
    )
 MSG_HASH( /* FIXME can now be replaced with MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_ADD */
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_ADD_ENTRY,
@@ -5004,10 +4912,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_CONTENTLESS_CORES,
    "Visa 'Innehållslösa Kärnor'"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_CONTENT_SHOW_CONTENTLESS_CORES,
-   "Specificera typen av Kärna (om någon) som ska visas i menyn 'Innehållslösa Kärnor'. När satt till 'Anpassa' kan den individuella kärnsynligheten växlas via menyn 'Hantera Kärnor'. (omstart krävs för Ozone/XMB)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_SHOW_CONTENTLESS_CORES_ALL,
@@ -6884,10 +6788,6 @@ MSG_HASH(
    "Kom ihåg senast använda Shader-katalog"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_VIDEO_SHADER_REMEMBER_LAST_DIR,
-   "Öppna filhanteraren i den senast använda katalogen när förinställda shaders ska laddas."
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_PRESET,
    "Ladda förinställd"
    )
@@ -7929,10 +7829,6 @@ MSG_HASH(
    "Har alltid det vänstra sidofältet hopfällt."
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_OZONE_TRUNCATE_PLAYLIST_NAME,
-   "Avkorta spellistnamn (omstart krävs)"
-   )
-MSG_HASH(
    MENU_ENUM_SUBLABEL_OZONE_TRUNCATE_PLAYLIST_NAME,
    "Ta bort tillverkarens namn från spellistorna. Till exempel, 'Sony - PlayStation' blir 'PlayStation'."
    )
@@ -8002,10 +7898,6 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_SUBLABEL_MATERIALUI_SWITCH_ICONS,
    "Använd ikoner istället för PÅ/AV-text för att representera 'omkopplare' menyinställningar."
-   )
-MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_MATERIALUI_PLAYLIST_ICONS_ENABLE,
-   "Spellista Ikoner (omstart krävs)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_MATERIALUI_PLAYLIST_ICONS_ENABLE,

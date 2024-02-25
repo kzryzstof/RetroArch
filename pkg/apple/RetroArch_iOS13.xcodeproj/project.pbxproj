@@ -6,6 +6,20 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		0795205D2B839A99000698BB /* Rebuild assets.zip */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 079520602B839A99000698BB /* Build configuration list for PBXAggregateTarget "Rebuild assets.zip" */;
+			buildPhases = (
+				079520612B839AB0000698BB /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "Rebuild assets.zip";
+			productName = "Rebuild assets.zip";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		070A88432A4E7AA9003161C0 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 070A88422A4E7AA9003161C0 /* OpenAL.framework */; };
 		0714E7152983A5E500E6B45B /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 0714E7132983A5AC00E6B45B /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -13,6 +27,7 @@
 		0734BB242ADB7FEE00EBDCAD /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 92EDD1622982E40C00AD33B4 /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		073734A42A093A5700BF7397 /* JITSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A1F81727006CAE00DEAD2A /* JITSupport.m */; };
 		073734A62A093ACA00BF7397 /* AltKit in Frameworks */ = {isa = PBXBuildFile; productRef = 073734A52A093ACA00BF7397 /* AltKit */; };
+		076CA50D2B695C2C00840EA5 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 076CA50C2B695C2C00840EA5 /* libz.tbd */; };
 		0789FC302A07847E00D042B7 /* AltKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0789FC2F2A07847E00D042B7 /* AltKit */; };
 		07B7872D29E8FE8F0088B74F /* filters in Resources */ = {isa = PBXBuildFile; fileRef = 07B7872C29E8FE8F0088B74F /* filters */; };
 		07F7FB022A2DA8B800037C04 /* filters in Resources */ = {isa = PBXBuildFile; fileRef = 07F7FB012A2DA8B800037C04 /* filters */; };
@@ -163,6 +178,7 @@
 		070A88422A4E7AA9003161C0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		0714E7132983A5AC00E6B45B /* libMoltenVK.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMoltenVK.dylib; path = tvOS/modules/libMoltenVK.dylib; sourceTree = "<group>"; };
 		0718BC5F2ABBA807001F2CBE /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.0.sdk/System/Library/Frameworks/Network.framework; sourceTree = DEVELOPER_DIR; };
+		076CA50C2B695C2C00840EA5 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.2.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 		0789FC2E2A07845300D042B7 /* AltKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = AltKit; path = Frameworks/AltKit; sourceTree = "<group>"; };
 		07B7872C29E8FE8F0088B74F /* filters */ = {isa = PBXFileReference; lastKnownFileType = folder; path = filters; sourceTree = "<group>"; };
 		07F7FB012A2DA8B800037C04 /* filters */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = filters; path = iOS/filters; sourceTree = SOURCE_ROOT; };
@@ -484,6 +500,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				076CA50D2B695C2C00840EA5 /* libz.tbd in Frameworks */,
 				926C77F121FD26E800103EDE /* GameController.framework in Frameworks */,
 				926C77EF21FD263800103EDE /* AudioToolbox.framework in Frameworks */,
 				073734A62A093ACA00BF7397 /* AltKit in Frameworks */,
@@ -1182,6 +1199,7 @@
 		96AFAE2816C1D4EA009DE44C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				076CA50C2B695C2C00840EA5 /* libz.tbd */,
 				0718BC5F2ABBA807001F2CBE /* Network.framework */,
 				070A88422A4E7AA9003161C0 /* OpenAL.framework */,
 				92EDD1622982E40C00AD33B4 /* libMoltenVK.dylib */,
@@ -1356,6 +1374,7 @@
 				9204BE091D319EF300BD49DB /* RetroArchiOS */,
 				926C77D621FD1E6500103EDE /* RetroArchTV */,
 				9292D6E028F549D000E47A75 /* RetroArchWidgetExtensionExtension */,
+				0795205D2B839A99000698BB /* Rebuild assets.zip */,
 			);
 		};
 /* End PBXProject section */
@@ -1416,7 +1435,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT\"\necho '#define GIT_VERSION ' $(git rev-parse --short HEAD) > ${DERIVED_FILE_DIR}/git_version.h\n";
+			shellScript = "cd \"$SRCBASE\"\nif [ -f \".git_version.h\" ] ; then\n   cp .git_version.h \"${DERIVED_FILE_DIR}\"/git_version.h\nelse\n   echo '#define GIT_VERSION ' $(git rev-parse --short HEAD) > \"${DERIVED_FILE_DIR}\"/git_version.h\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		07340E8D2B47A4910076B75D /* ShellScript */ = {
@@ -1436,7 +1455,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT\"\necho '#define GIT_VERSION ' $(git rev-parse --short HEAD) > ${DERIVED_FILE_DIR}/git_version.h\n";
+			shellScript = "cd \"$SRCBASE\"\nif [ -f \".git_version.h\" ] ; then\n   cp .git_version.h \"${DERIVED_FILE_DIR}\"/git_version.h\nelse\n   echo '#define GIT_VERSION ' $(git rev-parse --short HEAD) > \"${DERIVED_FILE_DIR}\"/git_version.h\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		079520612B839AB0000698BB /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/assets.zip",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "$SRCROOT/rebuild-assets.sh -o\n";
 			showEnvVarsInLog = 0;
 		};
 		9204BE271D319EF300BD49DB /* ShellScript */ = {
@@ -1577,6 +1616,25 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0732B0982B83D5CD00CA82CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Rebuild assets.zip";
+			};
+			name = Debug;
+		};
+		0732B0992B83D5CD00CA82CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				PRODUCT_NAME = "Rebuild assets.zip";
+			};
+			name = Release;
+		};
 		9204BE291D319EF300BD49DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1590,7 +1648,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_RESOURCE_RULES_PATH = "$(SDKROOT)/ResourceRules.plist";
-				CURRENT_PROJECT_VERSION = 1.16.0;
+				CURRENT_PROJECT_VERSION = 1.17.0;
 				DEPS_DIR = "$(SRCBASE)/deps";
 				DEVELOPMENT_TEAM = UK699V5ZS8;
 				ENABLE_BITCODE = NO;
@@ -1622,7 +1680,7 @@
 					"@executable_path/modules",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/iOS/modules";
-				MARKETING_VERSION = 1.16.0;
+				MARKETING_VERSION = 1.17.0;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = (
@@ -1642,7 +1700,6 @@
 				PRODUCT_NAME = "RetroArch for Play Lab";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SRCBASE = "$(SRCROOT)/../..";
 				SWIFT_OBJC_BRIDGING_HEADER = "RetroArch-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -1666,7 +1723,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_RESOURCE_RULES_PATH = "$(SDKROOT)/ResourceRules.plist";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.16.0;
+				CURRENT_PROJECT_VERSION = 1.17.0;
 				DEPS_DIR = "$(SRCBASE)/deps";
 				DEVELOPMENT_TEAM = UK699V5ZS8;
 				ENABLE_BITCODE = NO;
@@ -1698,7 +1755,7 @@
 					"@executable_path/modules",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/iOS/modules";
-				MARKETING_VERSION = 1.16.0;
+				MARKETING_VERSION = 1.17.0;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -1717,7 +1774,6 @@
 				PRODUCT_NAME = "RetroArch for Play Lab";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SRCBASE = "$(SRCROOT)/../..";
 				SWIFT_OBJC_BRIDGING_HEADER = "RetroArch-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = "armv7 arm64";
@@ -1757,7 +1813,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.16.0;
+				CURRENT_PROJECT_VERSION = 1.17.0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEPS_DIR = "$(SRCBASE)/deps";
 				DEVELOPMENT_TEAM = UK699V5ZS8;
@@ -1796,7 +1852,7 @@
 					"$(PROJECT_DIR)/tvOS/modules",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.16.0;
+				MARKETING_VERSION = 1.17.0;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "$(inherited)";
@@ -1809,7 +1865,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
-				SRCBASE = "$(SRCROOT)/../..";
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
 			};
@@ -1846,7 +1901,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.16.0;
+				CURRENT_PROJECT_VERSION = 1.17.0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEPS_DIR = "$(SRCBASE)/deps";
 				DEVELOPMENT_TEAM = UK699V5ZS8;
@@ -1885,7 +1940,7 @@
 					"$(PROJECT_DIR)/tvOS/modules",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.16.0;
+				MARKETING_VERSION = 1.17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "$(inherited)";
@@ -1898,7 +1953,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
-				SRCBASE = "$(SRCROOT)/../..";
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
 			};
@@ -1937,7 +1991,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.16.0;
+				CURRENT_PROJECT_VERSION = 1.17.0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = UK699V5ZS8;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1960,7 +2014,7 @@
 					"@executable_path/../../modules",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/iOS/modules";
-				MARKETING_VERSION = 1.16.0;
+				MARKETING_VERSION = 1.17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2008,7 +2062,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.16.0;
+				CURRENT_PROJECT_VERSION = 1.17.0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = UK699V5ZS8;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -2031,7 +2085,7 @@
 					"@executable_path/../../modules",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/iOS/modules";
-				MARKETING_VERSION = 1.16.0;
+				MARKETING_VERSION = 1.17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.libretro.RetroArch.PlayLabiOS11.RetroArchWidgetExtension;
@@ -2083,6 +2137,7 @@
 					"-DGLES_SILENCE_DEPRECATION",
 					"-DGLSLANG_OSINCLUDE_UNIX",
 					"-DHAVE_7ZIP",
+					"-DHAVE_ACCESSIBILITY",
 					"-DHAVE_AL",
 					"-DHAVE_ALTKIT",
 					"-DHAVE_AUDIOMIXER",
@@ -2123,6 +2178,7 @@
 					"-DHAVE_NETPLAYDISCOVERY_NSNET",
 					"-DHAVE_NETWORKGAMEPAD",
 					"-DHAVE_NETWORKING",
+					"-DHAVE_NO_BUILTINZLIB",
 					"-DHAVE_ONLINE_UPDATER",
 					"-DHAVE_OPENGL",
 					"-DHAVE_OPENGLES",
@@ -2166,6 +2222,7 @@
 				);
 				"OTHER_LDFLAGS[arch=*]" = "-Wl,-segalign,4000";
 				SDKROOT = iphoneos;
+				SRCBASE = "$(SRCROOT)/../..";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 arm64";
 			};
@@ -2208,6 +2265,7 @@
 					"-DGLES_SILENCE_DEPRECATION",
 					"-DGLSLANG_OSINCLUDE_UNIX",
 					"-DHAVE_7ZIP",
+					"-DHAVE_ACCESSIBILITY",
 					"-DHAVE_AL",
 					"-DHAVE_ALTKIT",
 					"-DHAVE_AUDIOMIXER",
@@ -2248,6 +2306,7 @@
 					"-DHAVE_NETPLAYDISCOVERY_NSNET",
 					"-DHAVE_NETWORKGAMEPAD",
 					"-DHAVE_NETWORKING",
+					"-DHAVE_NO_BUILTINZLIB",
 					"-DHAVE_ONLINE_UPDATER",
 					"-DHAVE_OPENGL",
 					"-DHAVE_OPENGLES",
@@ -2291,6 +2350,7 @@
 				);
 				"OTHER_LDFLAGS[arch=*]" = "-Wl,-segalign,4000";
 				SDKROOT = iphoneos;
+				SRCBASE = "$(SRCROOT)/../..";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VALID_ARCHS = "armv7 arm64";
@@ -2300,6 +2360,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		079520602B839A99000698BB /* Build configuration list for PBXAggregateTarget "Rebuild assets.zip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0732B0982B83D5CD00CA82CD /* Debug */,
+				0732B0992B83D5CD00CA82CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		9204BE281D319EF300BD49DB /* Build configuration list for PBXNativeTarget "RetroArchiOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

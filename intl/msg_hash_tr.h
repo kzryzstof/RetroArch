@@ -135,7 +135,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MENU_DISABLE_KIOSK_MODE,
-   "Kiosk Kipini Devre Dışı Bırak (Yeniden Başlatılmalı)"
+   "Kiosk Kipini Devre Dışı Bırak (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_MENU_DISABLE_KIOSK_MODE,
@@ -191,19 +191,23 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_RESTART_RETROARCH,
-   "Programı yeniden başlat."
+   "RetroArch uygulamasını yeniden başlat."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_QUIT_RETROARCH,
-   "Çıkış"
+   "Çık"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_QUIT_RETROARCH,
-   "Programdan çık."
+   "RetroArch uygulamasından çıkın. Çıkışta yapılandırma kaydetme etkin."
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_QUIT_RETROARCH_NOSAVE,
+   "RetroArch uygulamasından çıkın. Çıkışta yapılandırma kaydetme etkin değil."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_QUIT_RETROARCH,
-   "RetroArch üstünden çıkın. Programı herhangi bir şekilde zorla kapatmak (SIGKILL, vb.), Yapılandırmayı kaydetmeden RetroArch'ı sonlandırır, vb. Unix benzerlerinde, SIGINT/SIGTERM temiz bir destartizasyona izin verir."
+   "RetroArch çıkış. Programın herhangi bir şekilde (SIGKILL vb.) sonlandırılması, her durumda yapılandırmayı kaydetmeden RetroArch uygulamasını sonlandıracaktır. Unix benzeri sistemlerde SIGINT/SIGTERM, eğer etkinleştirilirse yapılandırma kaydetmeyi de içeren temiz bir başlangıç ​​giderme işlemine izin verir."
    )
 
 /* Main Menu > Load Core */
@@ -514,6 +518,14 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE,
    "Ürün Yazılımı"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE_IN_CONTENT_DIRECTORY,
+   "- Not: 'Sistem Dosyaları İçerik Dizinindedir' seçeneği şu anda etkindir."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CORE_INFO_FIRMWARE_PATH,
+   "- Şuraya bakılıyor: '%s'"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MISSING_REQUIRED,
@@ -1498,7 +1510,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_JOYPAD_DRIVER,
-   "Kullanılacak kontrolcü sürücüsü."
+   "Kullanılacak kontrolcğ sürücüsü. (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_JOYPAD_DRIVER_DINPUT,
@@ -1753,7 +1765,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_MENU_DRIVER,
-   "Kullanılacak menü sürücüsü."
+   "Kullanılacak menü sürücüsü. (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_MENU_DRIVER_XMB,
@@ -1867,12 +1879,160 @@ MSG_HASH(
    "Siyah Kare Ekle"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_VIDEO_BLACK_FRAME_INSERTION,
-   "Kareler arasına siyah bir kare ekler. Bazı yüksek yenileme hızlı ekranlarda gölgelenmeyi ortadan kaldırmak için kullanışlıdır."
+   MENU_ENUM_LABEL_HELP_VIDEO_BLACK_FRAME_INSERTION,
+   "Gelişmiş hareket netliği için karelerin arasına siyah kareler ekler. Yalnızca mevcut ekran yenileme hızınız için belirlenen seçeneği kullanın. 144Hz, 165Hz vb. gibi 60Hz katı olmayan yenileme hızlarında kullanılmaz. Değiştirme Aralığı > 1 (Otomatik tamam), Kare Gecikmesi veya Tam İçerik Kare Hızına Eşitleme ile birleştirmeyin. Sistem VRR açık bırakmak normalde sorun değil ancak bu ayarla uygun değil. Herhangi bir geçici görüntü tutulması fark ederseniz, 120h[...]"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_HELP_VIDEO_BLACK_FRAME_INSERTION,
-   "Kareler arasına siyah bir çerçeve ekler. 120 Hz monitörler için 60 Hz materyali gölgelenmeyi ortadan kaldırarak oynatmak için kullanışlıdır. Video yenileme hızı yine de 60 Hz'lik bir monitör gibi yapılandırılmalıdır (yenileme hızını 2'ye bölün)."
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_OFF,
+   "Kapalı"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_120,
+   "1 - 120Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_180,
+   "2 - 180Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_240,
+   "3 - 240Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_300,
+   "4 - 300Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_360,
+   "5 - 360Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_420,
+   "6 - 420Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_480,
+   "7 - 480Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_540,
+   "8 - 540Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_600,
+   "9 - 600Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_660,
+   "10 - 660Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_720,
+   "11 - 720Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_780,
+   "12 - 780Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_840,
+   "13 - 840Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_900,
+   "14 - 900Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BLACK_FRAME_INSERTION_VALUE_960,
+   "15 - 960Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_BFI_DARK_FRAMES,
+   "Siyah Kare Ekleme - Koyu Kareler"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_VIDEO_BFI_DARK_FRAMES,
+   "Toplam BFI tarama sırasındaki siyah kare sayısını ayarlayın. Daha fazlası daha yüksek hareket netliğine, daha azı daha yüksek parlaklığa eşittir. Toplamda çalışacak yalnızca 1 BFI kare olduğundan 120 Hz için geçerli değildir. Mümkün olandan daha yüksek ayarlar, sizi seçtiğiniz yenileme hızı için mümkün olan azami değerle sınırlayacaktır."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_HELP_VIDEO_BFI_DARK_FRAMES,
+   "Bfi dizisinde görüntülenen siyah kare sayısını ayarlar. Daha fazla siyah kare hareket netliğini artırır ancak parlaklığı azaltır. Toplamda yalnızca bir adet ekstra 60hz çerçeve olduğundan 120hz için geçerli değildir, bu nedenle siyah olmalıdır, aksi takdirde BFI hiç aktif olmazdı."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES,
+   "Gölgelendirici Alt-kareleri"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_VIDEO_SHADER_SUBFRAMES,
+   "Kareler arasına fazladan gölgelendirici kareler ekleyin. Gölgelendiricilerin gerçek içerik hızından daha yüksek bir fps hızında çalışan efektler oluşturmasına olanak tanır. Mevcut ekran Hz değerine ayarlanmalıdır. Takas Aralığı > 1, BFI, Kare Gecikmesi veya Tam İçerik Kare Hızına Eşitle ile birleştirmeyin."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_HELP_VIDEO_SHADER_SUBFRAMES,
+   "İçerik hızından daha hızlı çalışacak şekilde tasarlanmış olası gölgelendirici efektleri için kareler arasına fazladan gölgelendirici kareleri ekler. Yalnızca mevcut ekran yenileme hızınız için belirlenen seçeneği kullanın. 144Hz, 165Hz vb. gibi 60Hz katı olmayan yenileme hızlarında kullanılmaz. Takas Aralığı > 1, BFI, Kare Gecikmesi veya Tam İçerik Kare Hızına Eşitle ile birleştirmeyin. Sistem VRR açık bırakmak bu ayarda sorun çıkarmaz."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_OFF,
+   "Kapalı"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_120,
+   "2 - 120Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_180,
+   "3 - 180Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_240,
+   "4 - 240Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_300,
+   "5 - 300Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_360,
+   "6 - 360Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_420,
+   "7 - 420Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_480,
+   "8 - 480Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_540,
+   "9 - 540Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_600,
+   "10 - 600Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_660,
+   "11 - 660Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_720,
+   "12 - 720Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_780,
+   "13 - 780Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_840,
+   "14 - 840Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_900,
+   "15 - 900Hz Ekran Yenileme Hızı İçin"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_VIDEO_SHADER_SUBFRAMES_VALUE_960,
+   "16 - 960Hz Ekran Yenileme Hızı İçin"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_VIDEO_GPU_SCREENSHOT,
@@ -2035,7 +2195,7 @@ MSG_HASH(
 #if defined (WIIU)
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_VIDEO_WIIU_PREFER_DRC,
-   "Wii U GamePad için Düzenleyin (Yeniden Başlatılmalı)"
+   "Wii U GamePad için Düzenleyin (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_VIDEO_WIIU_PREFER_DRC,
@@ -2381,7 +2541,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_VIDEO_CROP_OVERSCAN,
-   "Aşırı Tarama (Yeniden Başlatılmalı)"
+   "Aşırı Tarama (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_VIDEO_CROP_OVERSCAN,
@@ -3009,7 +3169,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_POLL_TYPE_BEHAVIOR,
-   "Yoklama Davranışı (Yeniden Başlatılmalı)"
+   "Yoklama Davranışı (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_INPUT_POLL_TYPE_BEHAVIOR,
@@ -3038,7 +3198,7 @@ MSG_HASH(
 #if defined(HAVE_DINPUT) || defined(HAVE_WINRAWINPUT)
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_NOWINKEY_ENABLE,
-   "Windows Kısayol Tuşu Devre Dışı (Yeniden Başlatılmalı)"
+   "Windows Kısayol Tuşu Devre Dışı (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_INPUT_NOWINKEY_ENABLE,
@@ -3188,6 +3348,10 @@ MSG_HASH(
    "Klasik"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_TURBO_MODE_CLASSIC_TOGGLE,
+   "Klasik (Değiştir)"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_TURBO_MODE_SINGLEBUTTON,
    "Tek Düğme (Değiştir)"
    )
@@ -3198,6 +3362,10 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_TURBO_MODE_CLASSIC,
    "Klasik mod, iki düğmeli işlem. Basın-bırakın dizisini etkinleştirmek için bir düğmeyi basılı tutun ve Turbo düğmesine dokunun.\nTurbo düğmesi Ayarlar/Giriş/Port 1 Kontrollerinde atanabilir."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_HELP_TURBO_MODE_CLASSIC_TOGGLE,
+   "Klasik geçiş, iki düğmeli işlem. Bir düğmeyi basılı tutun ve o düğme için turboyu etkinleştirmek için Turbo düğmesine dokunun. Turboyu devre dışı bırakmak için: düğmeyi basılı tutun ve Turbo düğmesine tekrar basın.\nTurbo düğmesi Ayarlar/Giriş/Bağlantı Noktası 1 Kontrolleri'nden atanabilir."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_HELP_TURBO_MODE_SINGLEBUTTON,
@@ -3284,8 +3452,8 @@ MSG_HASH(
    "Android bağlantı kesilmesi geçici çözümü"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_ANDROID_INPUT_DISCONNECT_WORKAROUND,
-   "Bağlantıyı kesen ve yeniden bağlanan denetleyiciler için geçici çözüm. Aynı kontrolcüye sahip 2 oyuncuyu engeller."
+   MENU_ENUM_SUBLABEL_ANDROID_INPUT_DISCONNECT_WORKAROUND,
+   "Bağlantıyı kesen ve yeniden bağlanan kontrolcüler için geçici çözüm. Aynı kontrolcüye sahip 2 oyuncuyu engeller."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_QUIT_PRESS_TWICE,
@@ -3387,6 +3555,14 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_SUBLABEL_INPUT_HOTKEY_BLOCK_DELAY,
    "Atanan 'Kısayol Tuşu Etkinleştir' tuşuna basıldıktan sonra normal giriş engellenmeden önce karelere gecikme ekler. 'Kısayol Tuşu Etkinleştir' tuşundan normal girişin başka bir eyleme eşlendiğinde yakalanmasına izin verir (örn. RetroPad 'Seç')."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_INPUT_HOTKEY_DEVICE_MERGE,
+   "Kısayol Tuşu Cihaz Türlerini Birleştir"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_HOTKEY_DEVICE_MERGE,
+   "Her iki türde de 'Kısayol Tuşu Etkinleştir' ayarlanmışsa, hem klavye hem de kontrolcü cihazı türlerindeki tüm kısayol tuşlarını engelleyin."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_MENU_ENUM_TOGGLE_GAMEPAD_COMBO,
@@ -3866,6 +4042,10 @@ MSG_HASH(
    "Cihaz İndeksi"
    )
 MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_DEVICE_INDEX,
+   "RetroArch tarafından tanınan fiziksel kontrolcü."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_REMAP_PORT,
    "Eşlenmiş Port"
    )
@@ -3878,16 +4058,32 @@ MSG_HASH(
    "Tüm Kontrolcüleri Ayarla"
    )
 MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_BIND_ALL,
+   "Tüm yönleri ve düğmeleri bu menüde göründükleri sıraya göre arka arkaya atayın."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_BIND_DEFAULT_ALL,
    "Varsayılan Kontrolcülere Sıfırla"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_BIND_DEFAULTS,
+   "Girdi bağlama ayarlarını varsayılan değerlerine temizleyin."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_SAVE_AUTOCONFIG,
    "Kontrolcü Profilini Kaydet"
    )
 MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_SAVE_AUTOCONFIG,
+   "Bu kontrolcü yeniden algılandığında otomatik olarak uygulanacak bir otomatik yapılandırma dosyasını kaydedin."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_MOUSE_INDEX,
    "Fare İndeksi"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INPUT_MOUSE_INDEX,
+   "RetroArch tarafından tanınan fiziksel fare."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_JOYPAD_B,
@@ -4293,6 +4489,14 @@ MSG_HASH(
    "Özelleştirilmiş kontrolcüleri başlangıçta yükleyin."
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_INITIAL_DISK_CHANGE_ENABLE,
+   "İlk Disk Dizini Dosyalarını Otomatik Olarak Yükle"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_INITIAL_DISK_CHANGE_ENABLE,
+   "Çoklu disk içeriğini başlatırken son kullanılan diske geçin."
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_AUTO_SHADERS_ENABLE,
    "Gölgelendirici Hazır Ayarlarını Otomatik Olarak Yükle"
    )
@@ -4579,7 +4783,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_SHOW_HIDDEN_FILES,
-   "Dosya tarayıcıda gizli dosyaları ve dizinleri gösterin."
+   "Dosya tarayıcı üstünde gizli dosyaları ve dizinleri gösterin."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_NAVIGATION_BROWSER_FILTER_SUPPORTED_EXTENSIONS_ENABLE,
@@ -4992,7 +5196,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_OVERLAY_PRESET,
-   "Dosya tarayıcısından bir kaplama seç."
+   "Dosya tarayıcısı üstünden bir kaplama seç."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_OVERLAY_SCALE_LANDSCAPE,
@@ -5107,7 +5311,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_OSK_OVERLAY_PRESET,
-   "Dosya tarayıcısından bir klavye kaplaması seçin."
+   "Dosya tarayıcısı üstünden bir klavye kaplaması seçin."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_INPUT_OSK_OVERLAY_AUTO_SCALE,
@@ -5698,7 +5902,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_DESKTOP_MENU_ENABLE,
-   "Masaüstü Menüsü (Yeniden Başlatılmalı)"
+   "Masaüstü Menüsü (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_UI_COMPANION_TOGGLE,
@@ -5923,7 +6127,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CONTENT_SHOW_PLAYLISTS,
-   "'Oynatma Listesi' menüsünü gösterin. (Ozon/XMB'de Yeniden Başlatılmalı)"
+   "Oynatma listesini gösterin. (Ozon/XMB'de Yeniden Başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CONTENT_SHOW_EXPLORE,
@@ -7638,15 +7842,15 @@ MSG_HASH( /* FIXME Not RGUI specific */
    )
 MSG_HASH( /* FIXME Not RGUI specific */
    MENU_ENUM_SUBLABEL_RGUI_BROWSER_DIRECTORY,
-   "Dosya tarayıcısı için başlangıç ​​dizinini ayarlayın."
+   "Dosya Tarayıcı için Başlangıç ​​Dizini'ni ayarlayın."
    )
 MSG_HASH( /* FIXME Not RGUI specific */
    MENU_ENUM_LABEL_VALUE_RGUI_CONFIG_DIRECTORY,
-   "Yapılandırma"
+   "Yapılandırma Dosyaları"
    )
 MSG_HASH( /* FIXME Not RGUI specific */
    MENU_ENUM_SUBLABEL_RGUI_CONFIG_DIRECTORY,
-   "Menü yapılandırma tarayıcısı için başlangıç dizinini ayarlar."
+   "Varsayılan yapılandırma dosyası bu dizinde saklanır."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_LIBRETRO_DIR_PATH,
@@ -10458,7 +10662,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_RGUI_MENU_THEME_PRESET,
-   "Dosya tarayıcısından hazır bir menü teması seçin."
+   "Dosya tarayıcı üstünden hazır bir menü teması seçin."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MENU_RGUI_TRANSPARENCY,
@@ -10936,7 +11140,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_XMB_MAIN_MENU_ENABLE_SETTINGS,
-   "Ayarlar Sekmesini Etkinleştir (Yeniden Başlatılmalı)"
+   "Ayarlar Sekmesini Etkinleştir (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_XMB_MAIN_MENU_ENABLE_SETTINGS,
@@ -11110,7 +11314,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_OZONE_TRUNCATE_PLAYLIST_NAME,
-   "Oynatma Listesi Adlarını Kes (Yeniden Başlatılmalı)"
+   "Oynatma Listesi Adlarını Kes (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_OZONE_TRUNCATE_PLAYLIST_NAME,
@@ -11118,7 +11322,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_OZONE_SORT_AFTER_TRUNCATE_PLAYLIST_NAME,
-   "Ad Kısaltmadan Sonra Oynatma Listelerini Sırala (Yeniden Başlatılmalı)"
+   "Ad Kısaltmadan Sonra Oynatma Listelerini Sırala (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_OZONE_SORT_AFTER_TRUNCATE_PLAYLIST_NAME,
@@ -11229,7 +11433,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_MATERIALUI_PLAYLIST_ICONS_ENABLE,
-   "Oynatma Listesi Simgeleri (Yeniden Başlatılmalı)"
+   "Oynatma Listesi Simgeleri (Yeniden başlatılmalı)"
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_MATERIALUI_PLAYLIST_ICONS_ENABLE,
@@ -13106,6 +13310,10 @@ MSG_HASH(
    "Kontrolcü profili başarıyla kaydedildi."
    )
 MSG_HASH(
+   MSG_AUTOCONFIG_FILE_SAVED_SUCCESSFULLY_NAMED,
+   "Kontrolcü profili, Kontrolcü Profilleri dizinine şu şekilde kaydedildi:\n\"%s\""
+   )
+MSG_HASH(
    MSG_AUTOSAVE_FAILED,
    "Otomatik kaydetme başlatılamadı."
    )
@@ -14275,7 +14483,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MSG_FAILED_TO_SET_INITIAL_DISK,
-   "Son kullanılan disk ayarlanamadı..."
+   "Son kullanılan disk ayarlanamadı."
    )
 MSG_HASH(
    MSG_FAILED_TO_CONNECT_TO_CLIENT,
@@ -15249,4 +15457,12 @@ MSG_HASH(
 MSG_HASH(
    MSG_IOS_TOUCH_MOUSE_DISABLED,
    "Dokunmatik fare devre dışı"
+   )
+MSG_HASH(
+   MSG_ACCESSIBILITY_STARTUP,
+   "RetroArch erişilebilirliği açık. Ana Menü Çekirdek Yükle."
+   )
+MSG_HASH(
+   MSG_AI_SERVICE_STOPPED,
+   "durduruldu."
    )

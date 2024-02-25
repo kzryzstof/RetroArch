@@ -111,6 +111,151 @@ typedef struct
 /* -------------------------------------------------------------------------- */
 
 /**
+ * Returns the string representation of the translation language enum value.
+ */
+static const char* ai_service_get_str(enum translation_lang id)
+{
+   switch (id)
+   {
+      case TRANSLATION_LANG_EN:
+         return "en";
+      case TRANSLATION_LANG_ES:
+         return "es";
+      case TRANSLATION_LANG_FR:
+         return "fr";
+      case TRANSLATION_LANG_IT:
+         return "it";
+      case TRANSLATION_LANG_DE:
+         return "de";
+      case TRANSLATION_LANG_JP:
+         return "ja";
+      case TRANSLATION_LANG_NL:
+         return "nl";
+      case TRANSLATION_LANG_CS:
+         return "cs";
+      case TRANSLATION_LANG_DA:
+         return "da";
+      case TRANSLATION_LANG_SV:
+         return "sv";
+      case TRANSLATION_LANG_HR:
+         return "hr";
+      case TRANSLATION_LANG_KO:
+         return "ko";
+      case TRANSLATION_LANG_ZH_CN:
+         return "zh-CN";
+      case TRANSLATION_LANG_ZH_TW:
+         return "zh-TW";
+      case TRANSLATION_LANG_CA:
+         return "ca";
+      case TRANSLATION_LANG_BG:
+         return "bg";
+      case TRANSLATION_LANG_BN:
+         return "bn";
+      case TRANSLATION_LANG_EU:
+         return "eu";
+      case TRANSLATION_LANG_AZ:
+         return "az";
+      case TRANSLATION_LANG_AR:
+         return "ar";
+      case TRANSLATION_LANG_AST:
+         return "ast";
+      case TRANSLATION_LANG_SQ:
+         return "sq";
+      case TRANSLATION_LANG_AF:
+         return "af";
+      case TRANSLATION_LANG_EO:
+         return "eo";
+      case TRANSLATION_LANG_ET:
+         return "et";
+      case TRANSLATION_LANG_TL:
+         return "tl";
+      case TRANSLATION_LANG_FI:
+         return "fi";
+      case TRANSLATION_LANG_GL:
+         return "gl";
+      case TRANSLATION_LANG_KA:
+         return "ka";
+      case TRANSLATION_LANG_EL:
+         return "el";
+      case TRANSLATION_LANG_GU:
+         return "gu";
+      case TRANSLATION_LANG_HT:
+         return "ht";
+      case TRANSLATION_LANG_HE:
+         return "he";
+      case TRANSLATION_LANG_HI:
+         return "hi";
+      case TRANSLATION_LANG_HU:
+         return "hu";
+      case TRANSLATION_LANG_IS:
+         return "is";
+      case TRANSLATION_LANG_ID:
+         return "id";
+      case TRANSLATION_LANG_GA:
+         return "ga";
+      case TRANSLATION_LANG_KN:
+         return "kn";
+      case TRANSLATION_LANG_LA:
+         return "la";
+      case TRANSLATION_LANG_LV:
+         return "lv";
+      case TRANSLATION_LANG_LT:
+         return "lt";
+      case TRANSLATION_LANG_MK:
+         return "mk";
+      case TRANSLATION_LANG_MS:
+         return "ms";
+      case TRANSLATION_LANG_MT:
+         return "mt";
+      case TRANSLATION_LANG_NO:
+         return "no";
+      case TRANSLATION_LANG_FA:
+         return "fa";
+      case TRANSLATION_LANG_PL:
+         return "pl";
+      case TRANSLATION_LANG_PT:
+         return "pt";
+      case TRANSLATION_LANG_RO:
+         return "ro";
+      case TRANSLATION_LANG_RU:
+         return "ru";
+      case TRANSLATION_LANG_SR:
+         return "sr";
+      case TRANSLATION_LANG_SK:
+         return "sk";
+      case TRANSLATION_LANG_SL:
+         return "sl";
+      case TRANSLATION_LANG_SW:
+         return "sw";
+      case TRANSLATION_LANG_TA:
+         return "ta";
+      case TRANSLATION_LANG_TE:
+         return "te";
+      case TRANSLATION_LANG_TH:
+         return "th";
+      case TRANSLATION_LANG_TR:
+         return "tr";
+      case TRANSLATION_LANG_UK:
+         return "uk";
+      case TRANSLATION_LANG_BE:
+         return "be";
+      case TRANSLATION_LANG_UR:
+         return "ur";
+      case TRANSLATION_LANG_VI:
+         return "vi";
+      case TRANSLATION_LANG_CY:
+         return "cy";
+      case TRANSLATION_LANG_YI:
+         return "yi";
+      case TRANSLATION_LANG_DONT_CARE:
+      case TRANSLATION_LANG_LAST:
+         break;
+   }
+
+   return "";
+}
+
+/**
  * Returns true if the accessibility narrator is currently playing audio.
  */
 #ifdef HAVE_ACCESSIBILITY
@@ -156,8 +301,9 @@ static void accessibility_speak(const char *text)
    settings_t *settings = config_get_ptr();
    unsigned speed       = settings->uints.accessibility_narrator_speech_speed;
    bool narrator_on     = settings->bools.accessibility_enable;
+   const char* voice    = ai_service_get_str(settings->uints.ai_service_target_lang);
 
-   accessibility_speak_priority(narrator_on, speed, text, 10);
+   navigation_say(narrator_on, speed, text, 10);
 #endif
 }
 
@@ -175,10 +321,11 @@ static void translation_speak(const char *text)
    unsigned mode     = settings->uints.ai_service_mode;
    unsigned speed    = settings->uints.accessibility_narrator_speech_speed;
    bool narrator_on  = settings->bools.accessibility_enable;
+   const char* voice = ai_service_get_str(settings->uints.ai_service_target_lang);
 
    /* Force the use of the narrator in Narrator modes (TTS) */
    if (mode == 2 || mode == 4 || mode == 5 || narrator_on || access_st->enabled)
-     accessibility_speak_priority(true, speed, text, 10);
+      accessibility_speak_priority(speed, text, 10, voice);
 #endif
 }
 
@@ -329,151 +476,6 @@ void translation_release(bool inform)
       translation_hash_info(MSG_AI_AUTO_MODE_DISABLED);
 }
 
-/**
- * Returns the string representation of the translation language enum value.
- */
-static const char* ai_service_get_str(enum translation_lang id)
-{
-   switch (id)
-   {
-      case TRANSLATION_LANG_EN:
-         return "en";
-      case TRANSLATION_LANG_ES:
-         return "es";
-      case TRANSLATION_LANG_FR:
-         return "fr";
-      case TRANSLATION_LANG_IT:
-         return "it";
-      case TRANSLATION_LANG_DE:
-         return "de";
-      case TRANSLATION_LANG_JP:
-         return "ja";
-      case TRANSLATION_LANG_NL:
-         return "nl";
-      case TRANSLATION_LANG_CS:
-         return "cs";
-      case TRANSLATION_LANG_DA:
-         return "da";
-      case TRANSLATION_LANG_SV:
-         return "sv";
-      case TRANSLATION_LANG_HR:
-         return "hr";
-      case TRANSLATION_LANG_KO:
-         return "ko";
-      case TRANSLATION_LANG_ZH_CN:
-         return "zh-CN";
-      case TRANSLATION_LANG_ZH_TW:
-         return "zh-TW";
-      case TRANSLATION_LANG_CA:
-         return "ca";
-      case TRANSLATION_LANG_BG:
-         return "bg";
-      case TRANSLATION_LANG_BN:
-         return "bn";
-      case TRANSLATION_LANG_EU:
-         return "eu";
-      case TRANSLATION_LANG_AZ:
-         return "az";
-      case TRANSLATION_LANG_AR:
-         return "ar";
-      case TRANSLATION_LANG_AST:
-         return "ast";
-      case TRANSLATION_LANG_SQ:
-         return "sq";
-      case TRANSLATION_LANG_AF:
-         return "af";
-      case TRANSLATION_LANG_EO:
-         return "eo";
-      case TRANSLATION_LANG_ET:
-         return "et";
-      case TRANSLATION_LANG_TL:
-         return "tl";
-      case TRANSLATION_LANG_FI:
-         return "fi";
-      case TRANSLATION_LANG_GL:
-         return "gl";
-      case TRANSLATION_LANG_KA:
-         return "ka";
-      case TRANSLATION_LANG_EL:
-         return "el";
-      case TRANSLATION_LANG_GU:
-         return "gu";
-      case TRANSLATION_LANG_HT:
-         return "ht";
-      case TRANSLATION_LANG_HE:
-         return "he";
-      case TRANSLATION_LANG_HI:
-         return "hi";
-      case TRANSLATION_LANG_HU:
-         return "hu";
-      case TRANSLATION_LANG_IS:
-         return "is";
-      case TRANSLATION_LANG_ID:
-         return "id";
-      case TRANSLATION_LANG_GA:
-         return "ga";
-      case TRANSLATION_LANG_KN:
-         return "kn";
-      case TRANSLATION_LANG_LA:
-         return "la";
-      case TRANSLATION_LANG_LV:
-         return "lv";
-      case TRANSLATION_LANG_LT:
-         return "lt";
-      case TRANSLATION_LANG_MK:
-         return "mk";
-      case TRANSLATION_LANG_MS:
-         return "ms";
-      case TRANSLATION_LANG_MT:
-         return "mt";
-      case TRANSLATION_LANG_NO:
-         return "no";
-      case TRANSLATION_LANG_FA:
-         return "fa";
-      case TRANSLATION_LANG_PL:
-         return "pl";
-      case TRANSLATION_LANG_PT:
-         return "pt";
-      case TRANSLATION_LANG_RO:
-         return "ro";
-      case TRANSLATION_LANG_RU:
-         return "ru";
-      case TRANSLATION_LANG_SR:
-         return "sr";
-      case TRANSLATION_LANG_SK:
-         return "sk";
-      case TRANSLATION_LANG_SL:
-         return "sl";
-      case TRANSLATION_LANG_SW:
-         return "sw";
-      case TRANSLATION_LANG_TA:
-         return "ta";
-      case TRANSLATION_LANG_TE:
-         return "te";
-      case TRANSLATION_LANG_TH:
-         return "th";
-      case TRANSLATION_LANG_TR:
-         return "tr";
-      case TRANSLATION_LANG_UK:
-         return "uk";
-      case TRANSLATION_LANG_BE:
-         return "be";
-      case TRANSLATION_LANG_UR:
-         return "ur";
-      case TRANSLATION_LANG_VI:
-         return "vi";
-      case TRANSLATION_LANG_CY:
-         return "cy";
-      case TRANSLATION_LANG_YI:
-         return "yi";
-      case TRANSLATION_LANG_DONT_CARE:
-      case TRANSLATION_LANG_LAST:
-         break;
-   }
-
-   return "";
-}
-
 /* AUTOMATION --------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
@@ -568,14 +570,7 @@ static access_response_t* parse_response_json(http_transfer_data_t *data)
 {
    int key                       = -1;
    rjson_t* json                 = NULL;
-   char* image_data              = NULL;
-   int image_size                = 0;
-#ifdef HAVE_AUDIOMIXER
-   void *sound_data              = NULL;
-   int sound_size                = 0;
-#endif
    access_response_t *response   = NULL;
-   bool empty                    = true;
    enum rjson_type type;
 
    if (!data || !data->data)
@@ -675,7 +670,6 @@ static void translation_response_image_widget(
 {
    video_driver_state_t *video_st = video_state_get_ptr();
    dispgfx_widget_t *p_dispwidget = dispwidget_get_ptr();
-   access_state_t *access_st      = access_state_get_ptr();
 
    bool ai_res;
    bool gfx_widgets_paused        = video_st->flags & VIDEO_FLAG_WIDGETS_PAUSED;
@@ -1082,7 +1076,6 @@ static void translation_response_input(access_response_t *response)
 #ifdef HAVE_ACCESSIBILITY
       input_driver_state_t *input_st   = input_state_get_ptr();
 #endif
-      int length                       = strlen(response->input);
       char *token                      = strtok(response->input, ",");
 
       while (token)
@@ -1355,7 +1348,9 @@ static bool translation_dupe_fail(access_frame_t *frame)
  */
 static access_base64_t* translation_frame_encode(access_frame_t *frame)
 {
+#ifndef HAVE_RPNG
    uint8_t header[54];
+#endif
    uint8_t *buffer         = NULL;
    uint64_t bytes          = 0;
    access_base64_t *encode = NULL;
