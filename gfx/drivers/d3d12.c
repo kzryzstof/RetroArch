@@ -1145,8 +1145,10 @@ static uint32_t d3d12_get_flags(void *data)
    BIT32_SET(flags, GFX_CTX_FLAGS_CUSTOMIZABLE_FRAME_LATENCY);
    BIT32_SET(flags, GFX_CTX_FLAGS_MENU_FRAME_FILTERING);
    BIT32_SET(flags, GFX_CTX_FLAGS_OVERLAY_BEHIND_MENU_SUPPORTED);
+   BIT32_SET(flags, GFX_CTX_FLAGS_BLACK_FRAME_INSERTION);
 #if defined(HAVE_SLANG) && defined(HAVE_SPIRV_CROSS)
    BIT32_SET(flags, GFX_CTX_FLAGS_SHADERS_SLANG);
+   BIT32_SET(flags, GFX_CTX_FLAGS_SUBFRAME_SHADERS);
 #endif
 
    return flags;
@@ -1721,6 +1723,8 @@ static bool d3d12_gfx_set_shader(void* data, enum rarch_shader_type type, const 
             &d3d12->pass[i].frame_count,     /* FrameCount */
             &d3d12->pass[i].frame_direction, /* FrameDirection */
             &d3d12->pass[i].rotation,        /* Rotation */
+            &d3d12->pass[i].total_subframes, /* TotalSubFrames */
+            &d3d12->pass[i].current_subframe,/* CurrentSubFrame */
          }
       };
       /* clang-format on */
@@ -3189,6 +3193,48 @@ static void d3d12_init_render_targets(d3d12_video_t* d3d12, unsigned width, unsi
    d3d12->flags &= ~D3D12_ST_FLAG_RESIZE_RTS;
 }
 
+static void dx12_inject_black_frame(d3d12_video_t* d3d12)
+{
+   D3D12GraphicsCommandList cmd   = d3d12->queue.cmd;
+
+
+   D3D12_GFX_SYNC();
+
+   d3d12->queue.allocator->lpVtbl->Reset(d3d12->queue.allocator);
+   cmd->lpVtbl->Reset(cmd, d3d12->queue.allocator,
+         d3d12->pipes[VIDEO_SHADER_STOCK_BLEND]); 
+
+   d3d12->chain.frame_index = DXGIGetCurrentBackBufferIndex(
+         d3d12->chain.handle);
+
+   D3D12_RESOURCE_TRANSITION(
+         cmd,
+         d3d12->chain.renderTargets[d3d12->chain.frame_index],
+         D3D12_RESOURCE_STATE_PRESENT,
+         D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+   cmd->lpVtbl->OMSetRenderTargets(
+         cmd, 1, &d3d12->chain.desc_handles[d3d12->chain.frame_index],
+         FALSE, NULL);
+   cmd->lpVtbl->ClearRenderTargetView(
+         cmd,
+         d3d12->chain.desc_handles[d3d12->chain.frame_index],
+         d3d12->chain.clearcolor,
+         0, NULL);
+
+   D3D12_RESOURCE_TRANSITION(
+         cmd,
+         d3d12->chain.renderTargets[d3d12->chain.frame_index],
+         D3D12_RESOURCE_STATE_RENDER_TARGET,
+         D3D12_RESOURCE_STATE_PRESENT);
+
+   cmd->lpVtbl->Close(cmd);
+   d3d12->queue.handle->lpVtbl->ExecuteCommandLists(d3d12->queue.handle, 1,
+         (ID3D12CommandList* const*)&d3d12->queue.cmd);
+   DXGIPresent(d3d12->chain.handle, d3d12->chain.swap_interval, 0);
+
+}
+
 static bool d3d12_gfx_frame(
       void*               data,
       const void*         frame,
@@ -3199,7 +3245,7 @@ static bool d3d12_gfx_frame(
       const char*         msg,
       video_frame_info_t* video_info)
 {
-   unsigned i;
+   unsigned i, k, m;
    d3d12_texture_t* texture       = NULL;
    d3d12_video_t*   d3d12         = (d3d12_video_t*)data;
    bool vsync                     = (d3d12->flags & D3D12_ST_FLAG_VSYNC) ? true : false;
@@ -3213,6 +3259,12 @@ static bool d3d12_gfx_frame(
       &video_info->osd_stat_params;
    bool menu_is_alive             = (video_info->menu_st_flags & MENU_ST_FLAG_ALIVE) ? true : false;
    bool overlay_behind_menu       = video_info->overlay_behind_menu;
+   unsigned black_frame_insertion = video_info->black_frame_insertion;
+   int bfi_light_frames;
+   unsigned n;
+   bool nonblock_state            = video_info->input_driver_nonblock_state;
+   bool runloop_is_slowmotion     = video_info->runloop_is_slowmotion;
+   bool runloop_is_paused         = video_info->runloop_is_paused;
 #ifdef HAVE_GFX_WIDGETS
    bool widgets_active            = video_info->widgets_active;
 #endif
@@ -3540,6 +3592,22 @@ static bool d3d12_gfx_frame(
             d3d12->pass[i].frame_direction = 1;
 
          d3d12->pass[i].rotation = retroarch_get_rotation();
+
+         /* Sub-frame info for multiframe shaders (per real content frame). 
+            Should always be 1 for non-use of subframes */
+         if (!(d3d12->flags & D3D12_ST_FLAG_FRAME_DUPE_LOCK))
+         {
+           if (     black_frame_insertion
+                 || nonblock_state
+                 || runloop_is_slowmotion
+                 || runloop_is_paused
+                 || (d3d12->flags & D3D12_ST_FLAG_MENU_ENABLE))
+              d3d12->pass[i].total_subframes = 1;
+           else
+              d3d12->pass[i].total_subframes = video_info->shader_subframes;
+
+           d3d12->pass[i].current_subframe = 1;
+         }
 
          for (j = 0; j < SLANG_CBUFFER_MAX; j++)
          {
@@ -3921,6 +3989,77 @@ static bool d3d12_gfx_frame(
       DXGIGetContainingOutput(d3d12->chain.handle, &pOutput);
       DXGIWaitForVBlank(pOutput);
       Release(pOutput);
+   }
+
+   if (
+           black_frame_insertion
+        && !(d3d12->flags & D3D12_ST_FLAG_MENU_ENABLE)
+        && !nonblock_state
+        && !runloop_is_slowmotion
+        && !runloop_is_paused
+        && (!(video_info->shader_subframes > 1)))
+   {
+      if (video_info->bfi_dark_frames > video_info->black_frame_insertion)
+         video_info->bfi_dark_frames = video_info->black_frame_insertion;
+
+      /* BFI now handles variable strobe strength, like on-off-off, vs on-on-off for 180hz.
+         This needs to be done with duping frames instead of increased swap intervals for
+         a couple reasons. Swap interval caps out at 4 in most all apis as of coding,
+         and seems to be flat ignored >1 at least in modern Windows for some older APIs. */
+      bfi_light_frames = video_info->black_frame_insertion - video_info->bfi_dark_frames;
+      if (bfi_light_frames > 0 && !(d3d12->flags & D3D12_ST_FLAG_FRAME_DUPE_LOCK))
+      {
+         d3d12->flags |= D3D12_ST_FLAG_FRAME_DUPE_LOCK;
+         while (bfi_light_frames > 0)
+         {
+            if (!(d3d12_gfx_frame(d3d12, NULL, 0, 0, frame_count, 0, msg, video_info)))
+            {
+               d3d12->flags &= ~D3D12_ST_FLAG_FRAME_DUPE_LOCK;
+               return false;
+            }
+            --bfi_light_frames;
+         }
+         d3d12->flags &= ~D3D12_ST_FLAG_FRAME_DUPE_LOCK;
+      }
+
+      for (n = 0; n < video_info->bfi_dark_frames; ++n)
+      {
+         if (!(d3d12->flags & D3D12_ST_FLAG_FRAME_DUPE_LOCK))
+         {
+            dx12_inject_black_frame(d3d12);
+         }
+      }
+   }
+
+   /* Frame duping for Shader Subframes, don't combine with swap_interval > 1, BFI.
+      Also, a major logical use of shader sub-frames will still be shader implemented BFI
+      or even rolling scan bfi, so we need to protect the menu/ff/etc from bad flickering
+      from improper settings, and unnecessary performance overhead for ff, screenshots etc. */
+   if (      (video_info->shader_subframes > 1)
+         &&  !black_frame_insertion
+         &&  !nonblock_state
+         &&  !runloop_is_slowmotion
+         &&  !runloop_is_paused
+         &&  (!(d3d12->flags & D3D12_ST_FLAG_MENU_ENABLE))
+         &&  (!(d3d12->flags & D3D12_ST_FLAG_FRAME_DUPE_LOCK)))
+   {
+      d3d12->flags |= D3D12_ST_FLAG_FRAME_DUPE_LOCK;
+      for (k = 1; k < video_info->shader_subframes; k++)
+      {
+         if (d3d12->shader_preset)
+            for (m = 0; m < d3d12->shader_preset->passes; m++)
+            {
+               d3d12->pass[m].total_subframes = video_info->shader_subframes;
+               d3d12->pass[m].current_subframe = k+1;
+            }
+         if (!d3d12_gfx_frame(d3d12, NULL, 0, 0, frame_count, 0, msg,
+                  video_info))
+         {
+            d3d12->flags &= ~D3D12_ST_FLAG_FRAME_DUPE_LOCK;
+            return false;
+         }
+      }
+      d3d12->flags &= ~D3D12_ST_FLAG_FRAME_DUPE_LOCK;
    }
 
    return true;

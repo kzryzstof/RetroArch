@@ -1971,6 +1971,7 @@ bool runloop_environment_cb(unsigned cmd, void *data)
 
                if (!string_is_empty(fullpath))
                {
+                  size_t len;
                   char tmp_path[PATH_MAX_LENGTH];
 
                   if (string_is_empty(dir_system))
@@ -1979,12 +1980,21 @@ bool runloop_environment_cb(unsigned cmd, void *data)
 
                   strlcpy(tmp_path, fullpath, sizeof(tmp_path));
                   path_basedir(tmp_path);
-                  dir_set(RARCH_DIR_SYSTEM, tmp_path);
-               }
 
-               *(const char**)data = dir_get_ptr(RARCH_DIR_SYSTEM);
+                  /* Removes trailing slash (unless root dir) */
+                  len = strlen(tmp_path);
+                  if (     string_count_occurrences_single_character(tmp_path, PATH_DEFAULT_SLASH_C()) > 1
+                        && tmp_path[len - 1] == PATH_DEFAULT_SLASH_C())
+                     tmp_path[len - 1] = '\0';
+
+                  dir_set(RARCH_DIR_SYSTEM, tmp_path);
+                  *(const char**)data = dir_get_ptr(RARCH_DIR_SYSTEM);
+               }
+               else /* If content path is empty, fall back to global system dir path */
+                  *(const char**)data = dir_system;
+
                RARCH_LOG("[Environ]: SYSTEM_DIRECTORY: \"%s\".\n",
-                     dir_system);
+                     *(const char**)data);
             }
             else
             {
@@ -4078,7 +4088,7 @@ void runloop_event_deinit_core(void)
       input_remapping_set_defaults(true);
    }
    else
-      input_remapping_restore_global_config(true);
+      input_remapping_restore_global_config(true, false);
 
    RARCH_LOG("[Core]: Unloading core symbols..\n");
    uninit_libretro_symbols(&runloop_st->current_core);
@@ -4087,13 +4097,7 @@ void runloop_event_deinit_core(void)
    /* Restore original refresh rate, if it has been changed
     * automatically in SET_SYSTEM_AV_INFO */
    if (video_st->video_refresh_rate_original)
-   {
-      /* Set the av_info fps also to the original refresh rate */
-      /* to avoid re-initialization problems */
-      struct retro_system_av_info *av_info = &video_st->av_info;
-      av_info->timing.fps = video_st->video_refresh_rate_original;
       video_display_server_restore_refresh_rate();
-   }
 
    /* Recalibrate frame delay target */
    if (settings->bools.video_frame_delay_auto)
@@ -4414,6 +4418,7 @@ void runloop_set_video_swap_interval(
       bool crt_switching_active,
       unsigned swap_interval_config,
       unsigned black_frame_insertion,
+      unsigned shader_subframes,
       float audio_max_timing_skew,
       float video_refresh_rate,
       double input_fps)
@@ -4441,12 +4446,14 @@ void runloop_set_video_swap_interval(
     *   set swap interval to 1
     * > If core fps or display refresh rate are zero,
     *   set swap interval to 1
-    * > If BFI is active set swap interval to 1 */
+    * > If BFI is active set swap interval to 1
+    * > If Shader Subframes active, set swap interval to 1 */
    if (   (vrr_runloop_enable)
        || (core_hz    > timing_hz)
        || (core_hz   <= 0.0f)
        || (timing_hz <= 0.0f)
-       || (black_frame_insertion))
+       || (black_frame_insertion)
+       || (shader_subframes > 1))
    {
       runloop_st->video_swap_interval_auto = 1;
       return;
@@ -4624,6 +4631,7 @@ bool runloop_event_init_core(
    bool auto_remaps_enable         = false;
    const char *dir_input_remapping = NULL;
 #endif
+   bool initial_disk_change_enable = true;
    bool show_set_initial_disk_msg  = false;
    unsigned poll_type_behavior     = 0;
    float fastforward_ratio         = 0.0f;
@@ -4695,12 +4703,13 @@ bool runloop_event_init_core(
    /* Cannot access these settings-related parameters
     * until *after* config overrides have been loaded */
 #ifdef HAVE_CONFIGFILE
-   auto_remaps_enable        = settings->bools.auto_remaps_enable;
-   dir_input_remapping       = settings->paths.directory_input_remapping;
+   auto_remaps_enable         = settings->bools.auto_remaps_enable;
+   dir_input_remapping        = settings->paths.directory_input_remapping;
 #endif
-   show_set_initial_disk_msg = settings->bools.notification_show_set_initial_disk;
-   poll_type_behavior        = settings->uints.input_poll_type_behavior;
-   fastforward_ratio         = runloop_get_fastforward_ratio(
+   initial_disk_change_enable = settings->bools.initial_disk_change_enable;
+   show_set_initial_disk_msg  = settings->bools.notification_show_set_initial_disk;
+   poll_type_behavior         = settings->uints.input_poll_type_behavior;
+   fastforward_ratio          = runloop_get_fastforward_ratio(
          settings, &runloop_st->fastmotion_override.current);
 
 #ifdef HAVE_CHEEVOS
@@ -4744,7 +4753,8 @@ bool runloop_event_init_core(
    runloop_st->current_core.flags         |= RETRO_CORE_FLAG_INITED;
 
    /* Attempt to set initial disk index */
-   disk_control_set_initial_index(
+   if (initial_disk_change_enable)
+      disk_control_set_initial_index(
          &sys_info->disk_control,
          path_get(RARCH_PATH_CONTENT),
          runloop_st->savefile_dir);
@@ -4757,7 +4767,7 @@ bool runloop_event_init_core(
 
    /* Verify that initial disk index was set correctly */
    disk_control_verify_initial_index(&sys_info->disk_control,
-         show_set_initial_disk_msg);
+         show_set_initial_disk_msg, initial_disk_change_enable);
 
    if (!runloop_event_load_core(runloop_st, poll_type_behavior))
       return false;
@@ -4775,6 +4785,7 @@ void runloop_pause_checks(void)
    presence_userdata_t userdata;
 #endif
    video_driver_state_t *video_st = video_state_get_ptr();
+   settings_t *settings           = config_get_ptr();
    runloop_state_t *runloop_st    = &runloop_state;
    bool is_paused                 = (runloop_st->flags & RUNLOOP_FLAG_PAUSED) ? true : false;
    bool is_idle                   = (runloop_st->flags & RUNLOOP_FLAG_IDLE)   ? true : false;
@@ -4812,12 +4823,21 @@ void runloop_pause_checks(void)
 #ifdef HAVE_LAKKA
       set_cpu_scaling_signal(CPUSCALING_EVENT_FOCUS_MENU);
 #endif
+
+      /* Limit paused frames to video refresh. */
+      runloop_st->frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f /
+            ((video_st->video_refresh_rate_original)
+               ? video_st->video_refresh_rate_original
+               : settings->floats.video_refresh_rate));
    }
    else
    {
 #ifdef HAVE_LAKKA
       set_cpu_scaling_signal(CPUSCALING_EVENT_FOCUS_CORE);
 #endif
+
+      /* Restore frame limit. */
+      runloop_set_frame_limit(&video_st->av_info, settings->floats.fastforward_ratio);
    }
 
 #if defined(HAVE_TRANSLATE) && defined(HAVE_GFX_WIDGETS)
@@ -5288,7 +5308,7 @@ void runloop_msg_queue_push(const char *msg,
    if (is_accessibility_enabled(
             accessibility_enable,
             access_st->enabled))
-      accessibility_speak_priority(
+      navigation_say(
             accessibility_enable,
             accessibility_narrator_speech_speed,
             (char*) msg, 0);
@@ -6247,22 +6267,23 @@ static enum runloop_state_enum runloop_check_state(
 #ifdef HAVE_CHEEVOS
       if (cheevos_hardcore_active)
       {
-         static int unpaused_frames = 0;
-
-         if (runloop_st->flags & RUNLOOP_FLAG_PAUSED)
-            unpaused_frames         = 0;
-         else
-         /* Frame advance is not allowed when achievement hardcore is active */
+         if (!(runloop_st->flags & RUNLOOP_FLAG_PAUSED))
          {
-            /* Limit pause to approximately three times per second (depending on core framerate) */
-            if (unpaused_frames < 20)
+            /* In hardcore mode, the user is only allowed to pause infrequently. */
+            if ((pause_pressed && !old_pause_pressed) ||
+               (!focused && old_focus && pause_nonactive))
             {
-               ++unpaused_frames;
-               pause_pressed        = false;
+               /* If the user is trying to pause, check to see if it's allowed. */
+               if (!rcheevos_is_pause_allowed())
+               {
+                  pause_pressed = false;
+                  if (pause_nonactive)
+                     focused = true;
+               }
             }
          }
       }
-      else
+      else /* frame advance not allowed in hardcore */
 #endif
       {
          frameadvance_pressed = BIT256_GET(current_bits, RARCH_FRAMEADVANCE);
@@ -6950,12 +6971,6 @@ int runloop_iterate(void)
          netplay_driver_ctl(RARCH_NETPLAY_CTL_PAUSE, NULL);
 #endif
          video_driver_cached_frame();
-
-         /* Limit paused video refresh. */
-         runloop_st->frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f /
-               ((video_st->video_refresh_rate_original)
-                  ? video_st->video_refresh_rate_original
-                  : settings->floats.video_refresh_rate));
          goto end;
       case RUNLOOP_STATE_MENU:
 #ifdef HAVE_NETWORKING
@@ -7210,7 +7225,13 @@ end:
    }
 
    /* if there's a fast forward limit, inject sleeps to keep from going too fast. */
-   if (runloop_st->frame_limit_minimum_time)
+   if (   (runloop_st->frame_limit_minimum_time)
+          && (   (vrr_runloop_enable)
+              || (runloop_st->flags & RUNLOOP_FLAG_FASTMOTION)
+#ifdef HAVE_MENU
+              || (menu_state_get_ptr()->flags & MENU_ST_FLAG_ALIVE && !(settings->bools.video_vsync))
+#endif
+              || (runloop_st->flags & RUNLOOP_FLAG_PAUSED)))
    {
       const retro_time_t end_frame_time  = cpu_features_get_time_usec();
       const retro_time_t to_sleep_ms     = (
@@ -7312,7 +7333,7 @@ void runloop_task_msg_queue_push(
       if (is_accessibility_enabled(
             accessibility_enable,
             access_st->enabled))
-         accessibility_speak_priority(
+         navigation_say(
                accessibility_enable,
                accessibility_narrator_speech_speed,
                (char*)msg, 0);

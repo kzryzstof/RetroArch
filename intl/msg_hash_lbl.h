@@ -402,6 +402,10 @@ MSG_HASH(
    "auto_remaps_enable"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_INITIAL_DISK_CHANGE_ENABLE,
+   "initial_disk_change_enable"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_GLOBAL_CORE_OPTIONS,
    "global_core_options"
    )
@@ -1944,6 +1948,10 @@ MSG_HASH(
    "input_hotkey_block_delay"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_INPUT_HOTKEY_DEVICE_MERGE,
+   "input_hotkey_device_merge"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_INPUT_ICADE_ENABLE,
    "input_icade_enable"
    )
@@ -1966,6 +1974,22 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_INPUT_MOUSE_INDEX,
    "input_player%u_mouse_index"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_INPUT_JOYPAD_INDEX,
+   "input_player%u_joypad_index"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_INPUT_BIND_ALL_INDEX,
+   "input_player%u_bind_all"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_INPUT_SAVE_AUTOCONFIG_INDEX,
+   "input_player%u_bind_all_save_autoconfig"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_INPUT_BIND_DEFAULTS_INDEX,
+   "input_player%u_bind_all_bind_defaults"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_INPUT_REMAP_PORT,
@@ -4030,6 +4054,14 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_LABEL_VIDEO_BLACK_FRAME_INSERTION,
    "video_black_frame_insertion"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VIDEO_BFI_DARK_FRAMES,
+   "video_bfi_dark_frames"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VIDEO_SHADER_SUBFRAMES,
+   "video_shader_subframes"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VIDEO_CROP_OVERSCAN,

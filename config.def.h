@@ -394,12 +394,25 @@
 /* Try to sleep the spare time after frame is presented in order to reduce vsync CPU usage. */
 #define DEFAULT_FRAME_REST false
 
+/* Duplicates frames for the purposes of running Shaders at a higher framerate
+ * than content framerate. Requires running screen at multiple of 60hz, and
+ * don't combine with Swap_interval > 1, or BFI. (Though BFI can be done in a shader
+ * with multi-frame shaders.)
+ */
+#define DEFAULT_SHADER_SUBFRAMES 1
+
 /* Inserts black frame(s) inbetween frames.
  * Useful for Higher Hz monitors (set to multiples of 60 Hz) who want to play 60 Hz 
- * material with eliminated  ghosting. video_refresh_rate should still be configured
- * as if it is a 60 Hz monitor (divide refresh rate by multiple of 60 Hz).
+ * material with CRT-like motion clarity.
  */
 #define DEFAULT_BLACK_FRAME_INSERTION 0
+
+/* Black Frame Insertion Dark Frames.
+ * Increase for more clarity at the cost of lower brightness. Adjusting can also eliminate
+ * any temporary image retention if noticed. Only useful at 180hz or higher 60hz multiples, 
+ * as 120hz only has one total extra frame for BFI to work with.
+ */
+#define DEFAULT_BFI_DARK_FRAMES 1
 
 /* Uses a custom swap interval for VSync.
  * Set this to effectively halve monitor refresh rate.
@@ -842,6 +855,7 @@
 #define DEFAULT_GAME_SPECIFIC_OPTIONS true
 #define DEFAULT_AUTO_OVERRIDES_ENABLE true
 #define DEFAULT_AUTO_REMAPS_ENABLE true
+#define DEFAULT_INITIAL_DISK_CHANGE_ENABLE true
 #define DEFAULT_GLOBAL_CORE_OPTIONS false
 #define DEFAULT_AUTO_SHADERS_ENABLE true
 
@@ -1556,6 +1570,7 @@
 #define DEFAULT_INPUT_BIND_HOLD 0
 #define DEFAULT_INPUT_POLL_TYPE_BEHAVIOR 2
 #define DEFAULT_INPUT_HOTKEY_BLOCK_DELAY 5
+#define DEFAULT_INPUT_HOTKEY_DEVICE_MERGE false
 
 #define DEFAULT_GFX_THUMBNAILS_DEFAULT 3
 
@@ -1669,6 +1684,8 @@
 
 #if defined(HAKCHI)
 #define DEFAULT_BUILDBOT_SERVER_URL "http://hakchicloud.com/Libretro_Cores/"
+#elif defined(WEBOS)
+#define DEFAULT_BUILDBOT_SERVER_URL "https://www.webosbrew.org/retroarch-cores/armv7a/"
 #elif defined(ANDROID)
 #if defined(ANDROID_ARM_V7)
 #define DEFAULT_BUILDBOT_SERVER_URL "http://buildbot.libretro.com/nightly/android/latest/armeabi-v7a/"

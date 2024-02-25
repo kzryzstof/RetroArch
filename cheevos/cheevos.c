@@ -115,6 +115,7 @@ static rcheevos_locals_t rcheevos_locals =
    0.0,  /* tracker_progress */
  #endif
    {RCHEEVOS_LOAD_STATE_NONE, 0, 0 },  /* load_info */
+   0,    /* unpaused_frames */
    false,/* hardcore_active */
    false,/* loaded */
  #ifdef HAVE_GFX_WIDGETS
@@ -370,6 +371,15 @@ void rcheevos_spectating_changed(void)
 #endif
 }
 
+bool rcheevos_is_pause_allowed(void)
+{
+#ifdef HAVE_RC_CLIENT
+   return rc_client_can_pause(rcheevos_locals.client, NULL);
+#else
+   return (rcheevos_locals.unpaused_frames == 0);
+#endif
+}
+
 #ifdef HAVE_RC_CLIENT
 
 static void rcheevos_show_mastery_placard(void)
@@ -606,7 +616,7 @@ static void rcheevos_server_error(const char* api_name, const char* message)
       MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_ERROR);
 }
 
-static void rcheevos_server_disconnected()
+static void rcheevos_server_disconnected(void)
 {
    CHEEVOS_LOG(RCHEEVOS_TAG "Unable to communicate with RetroAchievements server\n");
 
@@ -623,7 +633,7 @@ static void rcheevos_server_disconnected()
 #endif
 }
 
-static void rcheevos_server_reconnected()
+static void rcheevos_server_reconnected(void)
 {
    CHEEVOS_LOG(RCHEEVOS_TAG "All pending requests synced to RetroAchievements server\n");
 
@@ -721,7 +731,7 @@ int rcheevos_get_richpresence(char* s, size_t len)
       }
    }
 
-   return rc_client_get_rich_presence_message(rcheevos_locals.client, s, (size_t)len);
+   return (int)rc_client_get_rich_presence_message(rcheevos_locals.client, s, (size_t)len);
 }
 
 #else /* !HAVE_RC_CLIENT */
@@ -1705,7 +1715,7 @@ void rcheevos_validate_config_settings(void)
    }
 
    /* this causes N blank frames to be rendered between real frames, thus
-    * slowing down the actual number of rendered frames per second. */
+    * can slow down the actual number of rendered frames per second. */
    if (settings->uints.video_black_frame_insertion > 0) {
       const char* error = "Hardcore paused. Black frame insertion not allowed.";
       CHEEVOS_LOG(RCHEEVOS_TAG "%s\n", error);
@@ -1715,6 +1725,20 @@ void rcheevos_validate_config_settings(void)
          MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_WARNING);
       return;
    }
+
+   /* this causes N dupe frames to be rendered between real frames, for
+      the purposes of shaders that update faster than content. Thus
+    * can slow down the actual number of rendered frames per second. */
+   if (settings->uints.video_shader_subframes > 1) {
+      const char* error = "Hardcore paused. Shader subframes not allowed.";
+      CHEEVOS_LOG(RCHEEVOS_TAG "%s\n", error);
+      rcheevos_pause_hardcore();
+
+      runloop_msg_queue_push(error, 0, 4 * 60, false, NULL,
+         MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_WARNING);
+      return;
+   }
+
 
    if (!(disallowed_settings
             = rc_libretro_get_disallowed_settings(sysinfo->library_name)))
@@ -1964,6 +1988,11 @@ void rcheevos_test(void)
       rcheevos_locals.tracker_progress = 0.0;
    }
  #endif
+
+   /* We processed a frame - if there's a pause delay in effect, process it */
+   if (rcheevos_locals.unpaused_frames > 0)
+      rcheevos_locals.unpaused_frames--;
+
 #endif /* HAVE_RC_CLIENT */
 }
 

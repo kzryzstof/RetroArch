@@ -122,10 +122,6 @@ MSG_HASH(
    "Otvori tradicionalni izbornik za radnu površinu."
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_MENU_DISABLE_KIOSK_MODE,
-   "Isključi način rada kioska (Potrebno ponovno pokretanje)"
-   )
-MSG_HASH(
    MENU_ENUM_SUBLABEL_MENU_DISABLE_KIOSK_MODE,
    "Prikaži sve postavke povezane s konfiguracijom."
    )
@@ -174,20 +170,8 @@ MSG_HASH(
    "Saznaj više o tome kako program funkcionira."
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_RESTART_RETROARCH,
-   "Ponovno pokreni RetroArch"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_RESTART_RETROARCH,
-   "Ponovo pokretanje programa."
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_VALUE_QUIT_RETROARCH,
-   "Zatvori RetroArch"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_QUIT_RETROARCH,
-   "Zatvori pogram."
+   "Izlaz"
    )
 
 /* Main Menu > Load Core */
