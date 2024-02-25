@@ -1,6 +1,8 @@
 #ifndef __WEBHOOKS_MEMORY_DUMP_H
 #define __WEBHOOKS_MEMORY_DUMP_H
 
+#include "include/webhooks.h"
+
 RETRO_BEGIN_DECLS
 
 #include "rc_runtime_types.h"
