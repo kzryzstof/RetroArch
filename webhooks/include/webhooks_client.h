@@ -19,6 +19,9 @@ void wc_send_achievement_event
   unsigned short game_event,
   unsigned int active_achievements,
   unsigned int total_achievements,
+  const char* achievement_badge,
+  const char* achievement_title,
+  unsigned int achievement_points,
   unsigned long frame_number,
   retro_time_t time
 );

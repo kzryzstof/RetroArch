@@ -453,7 +453,10 @@ void webhooks_process_frame
 
 void webhooks_update_achievements
 (
-  void
+  const rcheevos_racheevo_t* cheevo,
+  const char* achievement_id,
+  const char* achievement_title,
+  unsigned int achievement_points
 )
 {
   int number_of_active  = 0;
@@ -486,6 +489,9 @@ void webhooks_update_achievements
     ACHIEVEMENT,
     number_of_active,
     total_number,
+    achievement_id,
+    achievement_title,
+    achievement_points,
     frame_counter,
     time
    );
@@ -500,7 +506,13 @@ void webhooks_on_achievements_loaded
   locals.current_achievement = achievements;
   locals.last_achievement    = achievements + achievements_count;
 
-  webhooks_update_achievements();
+  webhooks_update_achievements
+  (
+    achievements,
+    achievements->badge,
+    achievements->title,
+    achievements->points
+  );
 }
 
 void webhooks_on_achievement_awarded
@@ -508,5 +520,11 @@ void webhooks_on_achievement_awarded
   const rcheevos_racheevo_t* cheevo
 )
 {
-  webhooks_update_achievements();
+  webhooks_update_achievements
+  (
+    cheevo,
+    cheevo->badge,
+    cheevo->title,
+    cheevo->points
+  );
 }

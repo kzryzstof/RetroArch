@@ -32,6 +32,11 @@ void wmp_on_game_loaded
 
     file = fopen(dump_file, "w+");
 
+    unsigned long rom_hash_length = strlen(rom_hash);
+
+    fwrite(&rom_hash_length, sizeof(unsigned long), 1, file);
+    fwrite(rom_hash, sizeof(char), rom_hash_length, file);
+
     if (memory_content == NULL)
         memory_content = (uint8_t*)malloc(sizeof(uint8_t) * memory_size);
 }
