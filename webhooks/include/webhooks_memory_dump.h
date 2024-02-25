@@ -1,7 +1,7 @@
 #ifndef __WEBHOOKS_MEMORY_DUMP_H
 #define __WEBHOOKS_MEMORY_DUMP_H
 
-#include "include/webhooks.h"
+#include "webhooks.h"
 
 RETRO_BEGIN_DECLS
 
