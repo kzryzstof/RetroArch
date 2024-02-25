@@ -2208,7 +2208,8 @@ ifeq ($(HAVE_NETWORKING), 1)
              webhooks/webhooks_oauth.o \
              webhooks/webhooks_progress_downloader.o \
              webhooks/webhooks_progress_parser.o \
-             webhooks/webhooks_progress_tracker.o
+             webhooks/webhooks_progress_tracker.o \
+             webhooks/webhooks_memory_dump.o
    endif
 
    ifeq ($(HAVE_DISCORD), 1)
