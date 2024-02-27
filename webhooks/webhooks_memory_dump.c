@@ -22,7 +22,7 @@ FILE *file;
 
 #define DUMP_ACTIVATED false
 
-void wmp_on_game_loaded
+void wmd_on_game_loaded
 (
     const char* rom_hash
 )
@@ -48,7 +48,7 @@ void wmp_on_game_loaded
       memory_content = (uint8_t*)malloc(sizeof(uint8_t) * memory_size);
 }
 
-void wmp_on_game_unloaded
+void wmd_on_game_unloaded
 (
   void
 )
@@ -63,7 +63,7 @@ void wmp_on_game_unloaded
   file = NULL;
 }
 
-void wmp_dump
+void wmd_dump
 (
     unsigned long frame_counter,
     wb_locals_t* locals

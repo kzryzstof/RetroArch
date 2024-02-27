@@ -14,7 +14,7 @@
 #include "../deps/rcheevos/src/rapi/rc_api_common.h"
 
 //  ---------------------------------------------------------------------------
-//
+//  Frees up the allocated memory related to the request.
 //  ---------------------------------------------------------------------------
 static void wc_end_http_request
 (
@@ -23,22 +23,34 @@ static void wc_end_http_request
 {
   rc_api_destroy_request(&request->request);
 
-  if (request->callback /* &&!rcheevos_load_aborted()*/)
-    request->callback(request->callback_data);
-
-  /* rich presence request will be reused on next ping - reset the attempt
-   * counter. for all other request types, free the request object */
-  //free(request->request.url);
-  //request->request.url = NULL;
+  free(request->headers);
+  request->headers = NULL;
   
-  //free(request->headers);
-  //request->headers = NULL;
-  
-  //free(request);
+  free(request);
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Called back when the game event has been successfully sent.
+//  ---------------------------------------------------------------------------
+static void wc_on_game_event_sent_completed
+(
+  async_http_request_t *request,
+  http_transfer_data_t *data,
+  char buffer[],
+  size_t buffer_size
+)
+{
+  void (*on_game_event_sent_callback)() = request->callback;
+  unsigned short game_event = (unsigned short)(request->callback_data);
+
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Game event '%d' has been sent\n", game_event);
+
+  if (on_game_event_sent_callback != NULL)
+    on_game_event_sent_callback();
+}
+
+//  ---------------------------------------------------------------------------
+//  Called back when the response has been received (whether it is successful or not.
 //  ---------------------------------------------------------------------------
 static void wc_handle_http_callback
 (
@@ -49,59 +61,52 @@ static void wc_handle_http_callback
 )
 {
   struct async_http_request_t *request = (struct async_http_request_t*)user_data;
-  http_transfer_data_t      *data    = (http_transfer_data_t*)task_data;
-  //const bool                 aborted = rcheevos_load_aborted();
+  http_transfer_data_t *data = (http_transfer_data_t*)task_data;
   char buffer[224];
 
-  /*if (aborted)
-  {
-    // load was aborted. don't process the response
-    strlcpy(buffer, "Load aborted", sizeof(buffer));
-  }
-  else */if (error)
+  if (error)
   {
     strlcpy(buffer, error, sizeof(buffer));
   }
   else if (!data)
   {
-    /* Server did not return HTTP headers */
+    //  Server did not return HTTP headers
     strlcpy(buffer, "Server communication error", sizeof(buffer));
   }
-  else if (!data->data || !data->len)
+  else
   {
     if (data->status <= 0)
     {
-      /* something occurred which prevented the response from being processed.
-       * assume the server request hasn't happened and try again. */
+      //  Something occurred which prevented the response from being processed.
+      //  assume the server request hasn't happened and try again.
       snprintf(buffer, sizeof(buffer), "task status code %d", data->status);
       return;
     }
 
-    if (data->status != 200) /* Server returned error via status code. */
+    if (data->status <= 299)
+    {
+      snprintf(buffer, sizeof(buffer), "HTTP status code %d", data->status);
+      
+      //  Indicate success unless handler provides error
+      buffer[0] = '\0';
+
+      //  Call appropriate handler to process the response
+      if (request->handler)
+        request->handler(request, data, buffer, sizeof(buffer));
+      
+    }
+    else if (data->status > 299)
     {
       snprintf(buffer, sizeof(buffer), "HTTP error code %d", data->status);
     }
     else {
-      /* Server sent empty response without error status code */
+      //  Server sent empty response without error status code
       strlcpy(buffer, "No response from server", sizeof(buffer));
     }
-  }
-  else
-  {
-    /* indicate success unless handler provides error */
-    buffer[0] = '\0';
-
-    /* Call appropriate handler to process the response */
-    /* NOTE: data->data is not null-terminated. Most handlers assume the
-     * response is properly formatted or will encounter a parse failure
-     * before reading past the end of the data */
-    if (request->handler)
-      request->handler(request, data, buffer, sizeof(buffer));
   }
 
   if (!buffer[0])
   {
-    /* success */
     if (request->success_message)
     {
       if (request->id)
@@ -112,24 +117,21 @@ static void wc_handle_http_callback
   }
   else
   {
-    /* encountered an error */
     char errbuf[256];
+    
     if (request->id)
-      snprintf(errbuf, sizeof(errbuf), "%s %u: %s",
-               request->failure_message, request->id, buffer);
+      snprintf(errbuf, sizeof(errbuf), "%s %u: %s", request->failure_message, request->id, buffer);
     else
-      snprintf(errbuf, sizeof(errbuf), "%s: %s",
-               request->failure_message, buffer);
+      snprintf(errbuf, sizeof(errbuf), "%s: %s", request->failure_message, buffer);
 
-    CHEEVOS_LOG(RCHEEVOS_TAG "%s\n", errbuf);
+    WEBHOOKS_LOG(WEBHOOKS_TAG "%s\n", errbuf);
   }
 
-  //  TODO Handle should be called?
   wc_end_http_request(request);
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Sends the HTTP request to the server.
 //  ---------------------------------------------------------------------------
 static void wc_begin_http_request
 (
@@ -149,7 +151,7 @@ static void wc_begin_http_request
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Configures the body of the HTTP request when sending progress.
 //  ---------------------------------------------------------------------------
 static void wc_set_progress_request_url
 (
@@ -349,6 +351,9 @@ static void wc_prepare_progress_http_request
   wc_set_request_header(request);
 }
 
+//  ---------------------------------------------------------------------------
+//  Prepares the HTTP request by sending its content and headers (Progress)
+//  ---------------------------------------------------------------------------
 static void wc_prepare_event_http_request
 (
   unsigned int console_id,
@@ -360,7 +365,8 @@ static void wc_prepare_event_http_request
 )
 {
   wc_set_event_request_url
-  (console_id,
+  (
+   console_id,
    rom_hash,
    game_event,
    frame_number,
@@ -371,6 +377,9 @@ static void wc_prepare_event_http_request
   wc_set_request_header(request);
 }
 
+//  ---------------------------------------------------------------------------
+//  Prepares the HTTP request by sending its content and headers (Achievements)
+//  ---------------------------------------------------------------------------
 static void wc_prepare_achievement_http_request
 (
   unsigned int console_id,
@@ -404,6 +413,9 @@ static void wc_prepare_achievement_http_request
   wc_set_request_header(request);
 }
 
+//  ---------------------------------------------------------------------------
+//  Prepares the HTTP request by sending its content and headers (Keep Alive)
+//  ---------------------------------------------------------------------------
 static void wc_prepare_keep_alive_http_request
 (
   unsigned int console_id,
@@ -428,7 +440,7 @@ static void wc_prepare_keep_alive_http_request
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Builds the HTTP request and sends the progress.
 //  ---------------------------------------------------------------------------
 static void wc_initiate_progress_request
 (
@@ -440,11 +452,22 @@ static void wc_initiate_progress_request
   async_http_request_t* request
 )
 {
-  wc_prepare_progress_http_request(console_id, rom_hash, progress, frame_number, time, request);
+  wc_prepare_progress_http_request
+  (
+   console_id,
+   rom_hash,
+   progress,
+   frame_number,
+   time,
+   request
+  );
 
   wc_begin_http_request(request);
 }
 
+//  ---------------------------------------------------------------------------
+//  Builds the HTTP request and sends the game event.
+//  ---------------------------------------------------------------------------
 static void wc_initiate_event_request
 (
   unsigned int console_id,
@@ -468,6 +491,9 @@ static void wc_initiate_event_request
   wc_begin_http_request(request);
 }
 
+//  ---------------------------------------------------------------------------
+//  Builds the HTTP request and sends the achievements.
+//  ---------------------------------------------------------------------------
 static void wc_initiate_achievement_request
 (
   unsigned int console_id,
@@ -501,6 +527,9 @@ static void wc_initiate_achievement_request
   wc_begin_http_request(request);
 }
 
+//  ---------------------------------------------------------------------------
+//  Builds the HTTP request and sends the keep alive.
+//  ---------------------------------------------------------------------------
 static void wc_initiate_keep_alive_request
 (
   unsigned int console_id,
@@ -525,7 +554,7 @@ static void wc_initiate_keep_alive_request
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Sends the progress.
 //  ---------------------------------------------------------------------------
 void wc_update_progress
 (
@@ -550,7 +579,7 @@ void wc_update_progress
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Sends the game event.
 //  ---------------------------------------------------------------------------
 void wc_send_game_event
 (
@@ -558,7 +587,8 @@ void wc_send_game_event
   const char* rom_hash,
   unsigned short game_event,
   unsigned long frame_number,
-  retro_time_t time
+  retro_time_t time,
+  void* on_game_event_sent_callback
 )
 {
   WEBHOOKS_LOG(WEBHOOKS_TAG "Sending game event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event, rom_hash, frame_number);
@@ -570,6 +600,10 @@ void wc_send_game_event
     WEBHOOKS_LOG(WEBHOOKS_TAG "Failed to allocate HTTP request\n");
     return;
   }
+
+  request->handler = wc_on_game_event_sent_completed;
+  request->callback = (async_client_callback)on_game_event_sent_callback;
+  request->callback_data = game_event;
 
   wc_initiate_event_request
   (
@@ -583,7 +617,7 @@ void wc_send_game_event
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Sends the achievement information.
 //  ---------------------------------------------------------------------------
 void wc_send_achievement_event
 (
@@ -626,7 +660,7 @@ void wc_send_achievement_event
 }
 
 //  ---------------------------------------------------------------------------
-//
+//  Sends a keep alive.
 //  ---------------------------------------------------------------------------
 void wc_send_keep_alive_event
 (

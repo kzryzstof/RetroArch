@@ -9,7 +9,8 @@ void wc_send_game_event
   const char* rom_hash,
   unsigned short game_event,
   unsigned long frame_number,
-  retro_time_t time
+  retro_time_t time,
+  void* on_game_event_sent_callback
 );
 
 void wc_send_achievement_event

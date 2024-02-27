@@ -311,7 +311,7 @@ static void wb_check_game_events
 
     if (result == RC_TRIGGER_STATE_TRIGGERED) {
       int event_id = locals.runtime.triggers[trigger_num].id;
-      wc_send_game_event(locals.console_id, locals.hash, event_id, frame_counter, time);
+      wc_send_game_event(locals.console_id, locals.hash, event_id, frame_counter, time, NULL);
     }
   }
 }
@@ -352,6 +352,20 @@ void webhooks_initialize
   locals.initialized = true;
 }
 
+void webhooks_on_game_event_sent
+(
+  void
+)
+{
+  wpd_download_game_progress(&locals, &wh_on_game_progress_downloaded);
+
+  wmd_on_game_loaded(locals.hash);
+
+  is_game_loaded = 1;
+  
+  //  TODO Send task to notify user everything is ok with Play Lab server
+}
+
 //  ---------------------------------------------------------------------------
 //  Called when a new game is loaded in the emulator.
 //  ---------------------------------------------------------------------------
@@ -372,13 +386,24 @@ void webhooks_load_game
 
   wpt_clear_progress();
 
-  wc_send_game_event(locals.console_id, locals.hash, LOADED, frame_counter, time);
+  if (strlen(locals.hash) > 0) {
+    
+    wc_send_game_event
+    (
+      locals.console_id,
+      locals.hash,
+      LOADED,
+      frame_counter,
+      time,
+      &webhooks_on_game_event_sent
+    );
 
-  wpd_download_game_progress(&locals, &wh_on_game_progress_downloaded);
+    //wpd_download_game_progress(&locals, &wh_on_game_progress_downloaded);
 
-  wmp_on_game_loaded(locals.hash);
+    //wmd_on_game_loaded(locals.hash);
 
-  is_game_loaded = 1;
+    //is_game_loaded = 1;
+  }
 }
 
 //  ---------------------------------------------------------------------------
@@ -389,15 +414,17 @@ void webhooks_unload_game
  void
 )
 {
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Current game has been unloaded\n");
-
-  const retro_time_t time = cpu_features_get_time_usec();
-
-  wc_send_game_event(locals.console_id, locals.hash, UNLOADED, frame_counter, time);
-
-  wmp_on_game_unloaded();
-
-  is_game_loaded = 0;
+  // WEBHOOKS_LOG(WEBHOOKS_TAG "Current game has been unloaded\n");
+  //
+  // const retro_time_t time = cpu_features_get_time_usec();
+  //
+  // if (strlen(locals.hash) > 0) {
+  //   wc_send_game_event(locals.console_id, locals.hash, UNLOADED, frame_counter, time, NULL);
+  //
+  //   wmd_on_game_unloaded();
+  //
+  //   is_game_loaded = 0;
+  // }
 }
 
 //  ---------------------------------------------------------------------------
@@ -408,23 +435,24 @@ void webhooks_reset_game
  void
 )
 {
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Current game has been reset\n");
-
-  frame_counter = 0;
-
-  const retro_time_t time = cpu_features_get_time_usec();
-
-  wb_reset_game_events();
-
-  wpt_clear_progress();
-
-  wc_send_game_event(locals.console_id, locals.hash, UNLOADED, frame_counter, time);
-
-  wc_send_game_event(locals.console_id, locals.hash, LOADED, frame_counter, time);
-  
-  wmp_on_game_unloaded();
-  
-  wmp_on_game_loaded(locals.hash);
+  // WEBHOOKS_LOG(WEBHOOKS_TAG "Current game has been reset\n");
+  //
+  // frame_counter = 0;
+  //
+  // const retro_time_t time = cpu_features_get_time_usec();
+  //
+  // wb_reset_game_events();
+  //
+  // wpt_clear_progress();
+  //
+  // if (strlen(locals.hash) > 0) {
+  //   wc_send_game_event(locals.console_id, locals.hash, UNLOADED, frame_counter, time, NULL);
+  //   wc_send_game_event(locals.console_id, locals.hash, LOADED, frame_counter, time, NULL);
+  // }
+  //
+  // wmd_on_game_unloaded();
+  //
+  // wmd_on_game_loaded(locals.hash);
 }
 
 
@@ -436,19 +464,19 @@ void webhooks_process_frame
    void
  )
 {
-  frame_counter++;
-
-  const retro_time_t time = cpu_features_get_time_usec();
-
-  //  Gets the latest values from the memory.
-  rc_update_memref_values(locals.runtime.memrefs, &wb_peek, NULL);
-  rc_update_variables(locals.runtime.variables, &wb_peek, NULL, NULL);
-
-  wb_check_game_events(frame_counter, time);
-
-  wb_check_progress(frame_counter, time);
-
-  wmp_dump(frame_counter, &locals);
+  // frame_counter++;
+  //
+  // const retro_time_t time = cpu_features_get_time_usec();
+  //
+  // //  Gets the latest values from the memory.
+  // rc_update_memref_values(locals.runtime.memrefs, &wb_peek, NULL);
+  // rc_update_variables(locals.runtime.variables, &wb_peek, NULL, NULL);
+  //
+  // wb_check_game_events(frame_counter, time);
+  //
+  // wb_check_progress(frame_counter, time);
+  //
+  // wmd_dump(frame_counter, &locals);
 }
 
 void webhooks_update_achievements
@@ -460,7 +488,7 @@ void webhooks_update_achievements
 )
 {
   int number_of_active  = 0;
-  
+
   int total_number      = 0;
 
   const retro_time_t time = cpu_features_get_time_usec();
@@ -503,16 +531,16 @@ void webhooks_on_achievements_loaded
   const unsigned int achievements_count
 )
 {
-  locals.current_achievement = achievements;
-  locals.last_achievement    = achievements + achievements_count;
-
-  webhooks_update_achievements
-  (
-    achievements,
-    achievements->badge,
-    achievements->title,
-    achievements->points
-  );
+  // locals.current_achievement = achievements;
+  // locals.last_achievement    = achievements + achievements_count;
+  //
+  // webhooks_update_achievements
+  // (
+  //   achievements,
+  //   achievements->badge,
+  //   achievements->title,
+  //   achievements->points
+  // );
 }
 
 void webhooks_on_achievement_awarded
@@ -520,11 +548,11 @@ void webhooks_on_achievement_awarded
   const rcheevos_racheevo_t* cheevo
 )
 {
-  webhooks_update_achievements
-  (
-    cheevo,
-    cheevo->badge,
-    cheevo->title,
-    cheevo->points
-  );
+  // webhooks_update_achievements
+  // (
+  //   cheevo,
+  //   cheevo->badge,
+  //   cheevo->title,
+  //   cheevo->points
+  // );
 }

@@ -7,17 +7,17 @@ RETRO_BEGIN_DECLS
 
 #include "rc_runtime_types.h"
 
-void wmp_on_game_loaded
+void wmd_on_game_loaded
 (
     const char* rom_hash
 );
 
-void wmp_on_game_unloaded
+void wmd_on_game_unloaded
 (
   void
 );
 
-void wmp_dump
+void wmd_dump
 (
     unsigned long frame_counter,
     wb_locals_t* locals
