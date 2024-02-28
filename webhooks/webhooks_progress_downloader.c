@@ -144,7 +144,8 @@ static void wpd_send_http_request(const wb_locals_t* locals, async_http_request_
 static void wpd_set_request_header(async_http_request_t* request)
 {
   //  Builds the header containing the authorization.
-  const char* access_token = woauth_get_accesstoken();
+  //  TODO!!
+  const char* access_token = NULL;//woauth_get_accesstoken();
 
   if (access_token == NULL)
   {

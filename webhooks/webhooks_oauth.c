@@ -56,6 +56,7 @@ woauth_code_response_t oauth_code_response;
 woauth_token_response_t oauth_token_response;
 
 bool is_pairing;
+access_token_callback_t access_token_retrieved_callback;
 
 static void woauth_schedule_accesstoken_retrieval
 (
@@ -64,7 +65,7 @@ static void woauth_schedule_accesstoken_retrieval
 
 static void woauth_trigger_accesstoken_retrieval
 (
-  void
+ void
 );
 
 // static void woauth_end_pairing()
@@ -112,21 +113,24 @@ static void woauth_schedule_accesstoken_retrieval
   task_queue_push(retry_task);
 }
 
-// //  ------------------------------------------------------------------------------
-// //  Clears the memory from the request.
-// //  ------------------------------------------------------------------------------
-// static void woauth_free_request
-// (
-//   async_http_request_t* request
-// )
-// {
-//   rc_api_destroy_request(&request->request);
-//
-//   if (request->callback)
-//     request->callback(request->callback_data);
-//
-//   free(request);
-// }
+//  ------------------------------------------------------------------------------
+//  Clears the memory from the request.
+//  ------------------------------------------------------------------------------
+static void woauth_free_request
+(
+  async_http_request_t* request
+)
+{
+  rc_api_destroy_request(&request->request);
+
+  free(request->headers);
+  
+  request->headers = NULL;
+  
+  request->callback = NULL;
+  
+  //free(request);
+}
 
 //  ------------------------------------------------------------------------------
 //  Handles the HTTP response.
@@ -152,36 +156,36 @@ static void woauth_end_http_request
     // Server did not return HTTP headers
     strlcpy(buffer, "Server communication error", sizeof(buffer));
   }
-  else if (!data->data || !data->len)
+  else
   {
     if (data->status <= 0)
     {
-      // Something occurred which prevented the response from being processed.
-      // assume the server request hasn't happened and try again.
+      //  Something occurred which prevented the response from being processed.
+      //  assume the server request hasn't happened and try again.
       snprintf(buffer, sizeof(buffer), "task status code %d", data->status);
       return;
     }
 
-    if (data->status != 200) // Server returned error via status code.
+    if (data->status <= 299)
     {
-      snprintf(buffer, sizeof(buffer), "Received HTTP status code %d", data->status);
+      snprintf(buffer, sizeof(buffer), "HTTP status code %d", data->status);
+      
+      //  Indicate success unless handler provides error
+      buffer[0] = '\0';
+
+      //  Call appropriate handler to process the response
+      if (request->handler)
+        request->handler(request, data, buffer, sizeof(buffer));
+      
+    }
+    else if (data->status > 299)
+    {
+      snprintf(buffer, sizeof(buffer), "HTTP error code %d", data->status);
     }
     else {
-      // Server sent empty response without error status code
+      //  Server sent empty response without error status code
       strlcpy(buffer, "No response from server", sizeof(buffer));
     }
-  }
-  else
-  {
-    // indicate success unless handler provides error
-    buffer[0] = '\0';
-
-    // Call appropriate handler to process the response
-    // NOTE: data->data is not null-terminated. Most handlers assume the
-    // response is properly formatted or will encounter a parse failure
-    // before reading past the end of the data
-    if (request->handler)
-      request->handler(request, data, buffer, sizeof(buffer));
   }
 
   if (!buffer[0])
@@ -212,11 +216,10 @@ static void woauth_end_http_request
     if (data->status == 204 && request->type == ACCESS_TOKEN) {
       WEBHOOKS_LOG(WEBHOOKS_TAG "User has not entered the code on the website. Retrying...\n");
       woauth_schedule_accesstoken_retrieval();
-      //woauth_free_request(request);
-    }// else if (data->status != 200 && request->type == ACCESS_TOKEN) {
-      //woauth_schedule_accesstoken_retrieval();
-    //}
+    }
   }
+  
+  woauth_free_request(request);
 }
 
 //  ------------------------------------------------------------------------------
@@ -304,15 +307,19 @@ static void woauth_handle_accesstoken_response
 
   WEBHOOKS_LOG(WEBHOOKS_TAG "Access token received and saved\n");
   
+  access_token_retrieved_callback
+  (
+    oauth_token_response.access_token
+  );
+  
   free(request);
   request = NULL;
 
   is_pairing = false;
+  
   //if (is_pairing)
   //  is_end_pairing_scheduled = true;
 }
-
-bool initialized = false;
 
 //  ------------------------------------------------------------------------------
 //  Initializes the HTTP request used to get an access token.
@@ -339,6 +346,7 @@ static void woauth_initialize_accesstoken_request
 
   request->type = ACCESS_TOKEN;
   request->handler = (async_http_handler)woauth_handle_accesstoken_response;
+
   request->request.url = settings->arrays.webhook_token_url;
   request->request.post_data = rc_url_builder_finalize(&builder);
 }
@@ -360,7 +368,10 @@ static void woauth_trigger_accesstoken_retrieval
 
   WEBHOOKS_LOG(WEBHOOKS_TAG "Starting retrieving an access token\n");
 
-  woauth_initialize_accesstoken_request(request);
+  woauth_initialize_accesstoken_request
+  (
+    request
+  );
 
   woauth_begin_http_request(request);
 }
@@ -510,16 +521,21 @@ void woauth_abort_pairing
 }
 
 //  ------------------------------------------------------------------------------
-//  Returns an access token used to contact the Webhook server.
+//  Triggers the process to get an access token. The caller will be notified
+//  via the callback.
 //  ------------------------------------------------------------------------------
-const char* woauth_get_accesstoken
+void woauth_load_accesstoken
 (
-  void
+ access_token_callback_t on_access_token_retrieved_callback
 )
 {
   const settings_t *settings = config_get_ptr();
   const int EXPIRATION_WINDOW = 1000 * 10 * 5;
 
+  //  We need to save a copy of the callback so that when a token is actually received, then the webhook subsystem is enabled
+  
+  access_token_retrieved_callback = on_access_token_retrieved_callback;
+  
   strlcpy(oauth_code_response.client_id, DEFAULT_CLIENT_ID, sizeof(oauth_code_response.client_id));
 
   retro_time_t now = cpu_features_get_time_usec();
@@ -532,29 +548,30 @@ const char* woauth_get_accesstoken
     //  The emulator has not been associated.
     //  Nothing can be done without any user intervention.
     WEBHOOKS_LOG(WEBHOOKS_TAG "Unable to read the expires_in from the configuration: the association must be established.\n");
-    return NULL;
+    return;
   }
 
   if (expecting_refresh == 0) {
     //  The emulator has not been associated.
     //  Nothing can be done without any user intervention.
     WEBHOOKS_LOG(WEBHOOKS_TAG "The value expires_in in the configuration is not set (0): the association must be established again\n");
-    return NULL;
+    return;
   }
   else if (now >= expecting_refresh) {
     if(!token_refresh_scheduled) {
       if (strlen(settings->arrays.webhook_refreshtoken) > 0) {
         //  Let's get an access token asap using the refresh token.
+        WEBHOOKS_LOG(WEBHOOKS_TAG "The access token is expired. Scheduling the retrieval of a new one using the refresh token\n");
         token_refresh_scheduled = true;
         woauth_trigger_accesstoken_retrieval();
-        return NULL;
+        return;
       }
     }
     else {
       //  The refresh token as well as the device code is missing.
       //  Nothing can be done without any user intervention.
       WEBHOOKS_LOG(WEBHOOKS_TAG "The refresh_token is missing from the configuration: the association must be established again\n");
-      return NULL;
+      return;
     }
   }
   else if (now + EXPIRATION_WINDOW >= expecting_refresh) {
@@ -565,16 +582,19 @@ const char* woauth_get_accesstoken
 
       token_refresh_scheduled = true;
       woauth_trigger_accesstoken_retrieval();
-      return settings->arrays.webhook_accesstoken;
+      
+      access_token_retrieved_callback(settings->arrays.webhook_accesstoken);
+      
+      return;
     }
     else {
       //  The refresh token as well as the device code is missing.
       //  Nothing can be done without any user intervention.
       WEBHOOKS_LOG(WEBHOOKS_TAG "A new access_token retrieval is already scheduled.\n");
-      return NULL;
+      return;
     }
   }
     
   //  The access token is not close to expire.
-  return settings->arrays.webhook_accesstoken;
+  access_token_retrieved_callback(settings->arrays.webhook_accesstoken);
 }

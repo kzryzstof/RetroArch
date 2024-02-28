@@ -82,6 +82,7 @@ typedef struct wb_locals_t
   unsigned int console_id;
   const rcheevos_racheevo_t* current_achievement;
   const rcheevos_racheevo_t* last_achievement;
+  const char* access_token;
 } wb_locals_t;
 
 unsigned wb_peek

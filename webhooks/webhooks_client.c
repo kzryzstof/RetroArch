@@ -155,11 +155,8 @@ static void wc_begin_http_request
 //  ---------------------------------------------------------------------------
 static void wc_set_progress_request_url
 (
-  unsigned int console_id,
-  const char* rom_hash,
+  wc_game_event_t game_event,
   const char* progress,
-  unsigned long frame_number,
-  retro_time_t time,
   async_http_request_t* request
 )
 {
@@ -170,13 +167,13 @@ static void wc_set_progress_request_url
   rc_url_builder_init(&builder, &request->request.buffer, 48);
 
   char time_str[64];
-  sprintf(time_str, "%lld", time);
+  sprintf(time_str, "%lld", game_event.time);
   
   char frame_number_str[64];
-  sprintf(frame_number_str, "%ld", frame_number);
+  sprintf(frame_number_str, "%ld", game_event.frame_number);
 
-  rc_url_builder_append_str_param(&builder, "h", rom_hash);
-  rc_url_builder_append_num_param(&builder, "c", console_id);
+  rc_url_builder_append_str_param(&builder, "h", game_event.rom_hash);
+  rc_url_builder_append_num_param(&builder, "c", game_event.console_id);
   rc_url_builder_append_str_param(&builder, "p", progress);
   rc_url_builder_append_str_param(&builder, "f", frame_number_str);
   rc_url_builder_append_str_param(&builder, "t", time_str);
@@ -188,11 +185,7 @@ static void wc_set_progress_request_url
 //  ---------------------------------------------------------------------------
 static void wc_set_event_request_url
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
@@ -203,14 +196,14 @@ static void wc_set_event_request_url
   rc_url_builder_init(&builder, &request->request.buffer, 48);
 
   char time_str[64];
-  sprintf(time_str, "%lld", time);
+  sprintf(time_str, "%lld", game_event.time);
   
   char frame_number_str[64];
-  sprintf(frame_number_str, "%ld", frame_number);
+  sprintf(frame_number_str, "%ld", game_event.frame_number);
 
-  rc_url_builder_append_str_param(&builder, "h", rom_hash);
-  rc_url_builder_append_num_param(&builder, "c", console_id);
-  rc_url_builder_append_num_param(&builder, "e", game_event);
+  rc_url_builder_append_str_param(&builder, "h", game_event.rom_hash);
+  rc_url_builder_append_num_param(&builder, "c", game_event.console_id);
+  rc_url_builder_append_num_param(&builder, "e", game_event.game_event_id);
   rc_url_builder_append_str_param(&builder, "f", frame_number_str);
   rc_url_builder_append_str_param(&builder, "t", time_str);
   request->request.post_data = rc_url_builder_finalize(&builder);
@@ -221,16 +214,8 @@ static void wc_set_event_request_url
 //  ---------------------------------------------------------------------------
 static void wc_set_achievement_request_url
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned int active_achievements,
-  unsigned int total_achievements,
-  const char* achievement_badge,
-  const char* achievement_title,
-  unsigned int achievement_points,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
+  wc_achievement_event_t achievement_event,
   async_http_request_t* request
 )
 {
@@ -241,19 +226,19 @@ static void wc_set_achievement_request_url
   rc_url_builder_init(&builder, &request->request.buffer, 48);
 
   char time_str[64];
-  sprintf(time_str, "%lld", time);
+  sprintf(time_str, "%lld", game_event.time);
 
   char frame_number_str[64];
-  sprintf(frame_number_str, "%ld", frame_number);
+  sprintf(frame_number_str, "%ld", game_event.frame_number);
 
-  rc_url_builder_append_str_param(&builder, "h", rom_hash);
-  rc_url_builder_append_num_param(&builder, "c", console_id);
-  rc_url_builder_append_num_param(&builder, "e", game_event);
-  rc_url_builder_append_num_param(&builder, "a", active_achievements);
-  rc_url_builder_append_num_param(&builder, "b", total_achievements);
-  rc_url_builder_append_str_param(&builder, "d", achievement_badge);
-  rc_url_builder_append_str_param(&builder, "g", achievement_title);
-  rc_url_builder_append_num_param(&builder, "i", achievement_points);
+  rc_url_builder_append_str_param(&builder, "h", game_event.rom_hash);
+  rc_url_builder_append_num_param(&builder, "c", game_event.console_id);
+  rc_url_builder_append_num_param(&builder, "e", game_event.game_event_id);
+  rc_url_builder_append_num_param(&builder, "a", achievement_event.active);
+  rc_url_builder_append_num_param(&builder, "b", achievement_event.total);
+  rc_url_builder_append_str_param(&builder, "d", achievement_event.badge);
+  rc_url_builder_append_str_param(&builder, "g", achievement_event.title);
+  rc_url_builder_append_num_param(&builder, "i", achievement_event.points);
   rc_url_builder_append_str_param(&builder, "f", frame_number_str);
   rc_url_builder_append_str_param(&builder, "t", time_str);
   request->request.post_data = rc_url_builder_finalize(&builder);
@@ -264,11 +249,7 @@ static void wc_set_achievement_request_url
 //  ---------------------------------------------------------------------------
 static void wc_set_keep_alive_request_url
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
@@ -279,14 +260,14 @@ static void wc_set_keep_alive_request_url
   rc_url_builder_init(&builder, &request->request.buffer, 48);
 
   char time_str[64];
-  sprintf(time_str, "%lld", time);
+  sprintf(time_str, "%lld", game_event.time);
 
   char frame_number_str[64];
-  sprintf(frame_number_str, "%ld", frame_number);
+  sprintf(frame_number_str, "%ld", game_event.frame_number);
 
-  rc_url_builder_append_str_param(&builder, "h", rom_hash);
-  rc_url_builder_append_num_param(&builder, "c", console_id);
-  rc_url_builder_append_num_param(&builder, "e", game_event);
+  rc_url_builder_append_str_param(&builder, "h", game_event.rom_hash);
+  rc_url_builder_append_num_param(&builder, "c", game_event.console_id);
+  rc_url_builder_append_num_param(&builder, "e", game_event.game_event_id);
   rc_url_builder_append_str_param(&builder, "f", frame_number_str);
   rc_url_builder_append_str_param(&builder, "t", time_str);
   request->request.post_data = rc_url_builder_finalize(&builder);
@@ -301,7 +282,8 @@ static void wc_set_request_header
 )
 {
   //  Builds the header containing the authorization.
-  const char* access_token = woauth_get_accesstoken();
+  //  TODO!!
+  const char* access_token = NULL;//woauth_get_accesstoken();
 
   if (access_token == NULL)
   {
@@ -338,15 +320,17 @@ static void wc_set_request_header
 //  ---------------------------------------------------------------------------
 static void wc_prepare_progress_http_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
+  wc_game_event_t game_event,
   const char* progress,
-  unsigned long frame_number,
-  retro_time_t time,
   async_http_request_t* request
 )
 {
-  wc_set_progress_request_url(console_id, rom_hash, progress, frame_number, time, request);
+  wc_set_progress_request_url
+  (
+    game_event,
+    progress,
+    request
+  );
 
   wc_set_request_header(request);
 }
@@ -356,21 +340,13 @@ static void wc_prepare_progress_http_request
 //  ---------------------------------------------------------------------------
 static void wc_prepare_event_http_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
   wc_set_event_request_url
   (
-   console_id,
-   rom_hash,
    game_event,
-   frame_number,
-   time,
    request
  );
 
@@ -382,31 +358,15 @@ static void wc_prepare_event_http_request
 //  ---------------------------------------------------------------------------
 static void wc_prepare_achievement_http_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned int active_achievements,
-  unsigned int total_achievements,
-  const char* achievement_badge,
-  const char* achievement_title,
-  unsigned int achievement_points,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
+  wc_achievement_event_t achievement_event,
   async_http_request_t* request
 )
 {
   wc_set_achievement_request_url
   (
-    console_id,
-    rom_hash,
     game_event,
-    active_achievements,
-    total_achievements,
-    achievement_badge,
-    achievement_title,
-    achievement_points,
-    frame_number,
-    time,
+    achievement_event,
     request
   );
 
@@ -418,21 +378,13 @@ static void wc_prepare_achievement_http_request
 //  ---------------------------------------------------------------------------
 static void wc_prepare_keep_alive_http_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
   wc_set_keep_alive_request_url
   (
-    console_id,
-    rom_hash,
     game_event,
-    frame_number,
-    time,
     request
   );
 
@@ -444,21 +396,15 @@ static void wc_prepare_keep_alive_http_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_progress_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
+  wc_game_event_t game_event,
   const char* progress,
-  unsigned long frame_number,
-  retro_time_t time,
   async_http_request_t* request
 )
 {
   wc_prepare_progress_http_request
   (
-   console_id,
-   rom_hash,
+   game_event,
    progress,
-   frame_number,
-   time,
    request
   );
 
@@ -470,21 +416,13 @@ static void wc_initiate_progress_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_event_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
   wc_prepare_event_http_request
   (
-    console_id,
-    rom_hash,
     game_event,
-    frame_number,
-    time,
     request
   );
 
@@ -496,31 +434,15 @@ static void wc_initiate_event_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_achievement_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned int active_achievements,
-  unsigned int total_achievements,
-  const char* achievement_badge,
-  const char* achievement_title,
-  unsigned int achievement_points,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
+  wc_achievement_event_t achievement_event,
   async_http_request_t* request
 )
 {
   wc_prepare_achievement_http_request
   (
-    console_id,
-    rom_hash,
     game_event,
-    active_achievements,
-    total_achievements,
-    achievement_badge,
-    achievement_title,
-    achievement_points,
-    frame_number,
-    time,
+    achievement_event,
     request
   );
 
@@ -532,21 +454,13 @@ static void wc_initiate_achievement_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_keep_alive_request
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
   wc_prepare_keep_alive_http_request
   (
-    console_id,
-    rom_hash,
     game_event,
-    frame_number,
-    time,
     request
   );
 
@@ -558,14 +472,11 @@ static void wc_initiate_keep_alive_request
 //  ---------------------------------------------------------------------------
 void wc_update_progress
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  const char* progress,
-  unsigned long frame_number,
-  retro_time_t time
+  wc_game_event_t game_event,
+  const char* progress
 )
 {
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending progress '%s' for ROM's hash '%s' (frame=%ld)\n", progress, rom_hash, frame_number);
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending progress '%s' for ROM's hash '%s' (frame=%ld)\n", progress, game_event.rom_hash, game_event.frame_number);
 
   async_http_request_t *request = (async_http_request_t*) calloc(1, sizeof(async_http_request_t));
 
@@ -575,7 +486,12 @@ void wc_update_progress
     return;
   }
 
-  wc_initiate_progress_request(console_id, rom_hash, progress, frame_number, time, request);
+  wc_initiate_progress_request
+  (
+    game_event,
+    progress,
+    request
+   );
 }
 
 //  ---------------------------------------------------------------------------
@@ -583,15 +499,11 @@ void wc_update_progress
 //  ---------------------------------------------------------------------------
 void wc_send_game_event
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time,
+  wc_game_event_t game_event,
   void* on_game_event_sent_callback
 )
 {
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending game event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event, rom_hash, frame_number);
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending game event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event.game_event_id, game_event.rom_hash, game_event.frame_number);
 
   async_http_request_t *request = (async_http_request_t*) calloc(1, sizeof(async_http_request_t));
 
@@ -602,16 +514,13 @@ void wc_send_game_event
   }
 
   request->handler = wc_on_game_event_sent_completed;
+  
   request->callback = (async_client_callback)on_game_event_sent_callback;
-  request->callback_data = game_event;
+  request->callback_data = (void*)&game_event;
 
   wc_initiate_event_request
   (
-    console_id,
-    rom_hash,
     game_event,
-    frame_number,
-    time,
     request
   );
 }
@@ -621,19 +530,11 @@ void wc_send_game_event
 //  ---------------------------------------------------------------------------
 void wc_send_achievement_event
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned int active_achievements,
-  unsigned int total_achievements,
-  const char* achievement_badge,
-  const char* achievement_title,
-  unsigned int achievement_points,
-  unsigned long frame_number,
-  retro_time_t time
+  wc_game_event_t game_event,
+  wc_achievement_event_t achievement_event
 )
 {
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending game achievement event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event, rom_hash, frame_number);
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending game achievement event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event.game_event_id, game_event.rom_hash, game_event.frame_number);
 
   async_http_request_t *request = (async_http_request_t*) calloc(1, sizeof(async_http_request_t));
 
@@ -645,16 +546,8 @@ void wc_send_achievement_event
 
   wc_initiate_achievement_request
   (
-    console_id,
-    rom_hash,
     game_event,
-    active_achievements,
-    total_achievements,
-    achievement_badge,
-    achievement_title,
-    achievement_points,
-    frame_number,
-    time,
+    achievement_event,
     request
   );
 }
@@ -664,14 +557,10 @@ void wc_send_achievement_event
 //  ---------------------------------------------------------------------------
 void wc_send_keep_alive_event
 (
-  unsigned int console_id,
-  const char* rom_hash,
-  unsigned short game_event,
-  unsigned long frame_number,
-  retro_time_t time
+  wc_game_event_t game_event
 )
 {
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending keep alive event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event, rom_hash, frame_number);
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Sending keep alive event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event.game_event_id, game_event.rom_hash, game_event.frame_number);
 
   async_http_request_t *request = (async_http_request_t*) calloc(1, sizeof(async_http_request_t));
 
@@ -683,11 +572,7 @@ void wc_send_keep_alive_event
 
   wc_initiate_keep_alive_request
   (
-    console_id,
-    rom_hash,
     game_event,
-    frame_number,
-    time,
     request
   );
 }
