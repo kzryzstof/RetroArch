@@ -43,13 +43,27 @@ int is_game_loaded = 0;
 bool is_access_token_valid = 0;
 retro_time_t last_update_time;
 unsigned long frame_counter = 0;
+wc_game_event_t queued_game_event;
 
+const unsigned short NONE = 0;
 const unsigned short LOADED = 1;
 const unsigned short STARTED = 2;
 const unsigned short ACHIEVEMENT = 3;
 const unsigned short KEEP_ALIVE = 4;
 const unsigned short UNLOADED = USHRT_MAX;
 const unsigned long PROGRESS_UPDATE_FRAME_FREQUENCY = 30;
+
+void clean_queued_game_event
+(
+  void
+)
+{
+  queued_game_event.console_id = 0;
+  queued_game_event.rom_hash = "";
+  queued_game_event.game_event_id = NONE;
+  queued_game_event.frame_number = 0;
+  queued_game_event.time = 0;
+}
 
 //  ---------------------------------------------------------------------------
 //
@@ -259,6 +273,7 @@ static void wb_check_progress
     
     wc_update_progress
     (
+      locals.access_token,
       progress_game_event,
       wpt_get_last_progress()
     );
@@ -284,6 +299,7 @@ static void wb_check_progress
         
         wc_send_keep_alive_event
         (
+          locals.access_token,
           keep_alive_event
         );
 
@@ -320,8 +336,9 @@ static void wb_check_game_events
       
       wc_send_game_event
       (
-       game_event,
-       NULL
+        locals.access_token,
+        game_event,
+        NULL
      );
     }
   }
@@ -342,41 +359,7 @@ static void wb_reset_game_events
   }
 }
 
-//  ---------------------------------------------------------------------------
-//  Called when the LOADED game event has been successfully sent.
-//  ---------------------------------------------------------------------------
-void webhooks_on_access_token_received
-(
-  const char* access_token
-)
-{
-  locals.access_token = access_token;
-  is_access_token_valid = true;
-}
 
-//  ---------------------------------------------------------------------------
-//  Initializes the webhooks subsystem.
-//  ---------------------------------------------------------------------------
-void webhooks_initialize
-(
- void
-)
-{
-  if (locals.initialized) {
-    return;
-  }
-
-  WEBHOOKS_LOG(WEBHOOKS_TAG "Initializing\n");
-
-  rc_runtime_init(&locals.runtime);
-
-  woauth_load_accesstoken
-  (
-    (access_token_callback_t)&webhooks_on_access_token_received
-  );
-
-  locals.initialized = true;
-}
 
 //  ---------------------------------------------------------------------------
 //  Called when the game's progress & events have been received from the backend server.
@@ -403,6 +386,8 @@ void webhooks_on_loaded_game_event_sent
   void
 )
 {
+  clean_queued_game_event();
+  
   wpd_download_game_progress
   (
     &locals,
@@ -417,6 +402,82 @@ void webhooks_on_loaded_game_event_sent
   is_game_loaded = 1;
   
   //  TODO Send task to notify user everything is ok with Play Lab server
+}
+
+//  ---------------------------------------------------------------------------
+//  Called when the UNLOADED game event has been sent
+//  ---------------------------------------------------------------------------
+void webhooks_on_unloaded_game_event_sent
+(
+  void
+)
+{
+  clean_queued_game_event();
+  
+  wmd_on_game_unloaded();
+
+  is_game_loaded = 0;
+  
+  wpd_download_game_progress
+  (
+    &locals,
+    &wh_on_game_progress_downloaded
+  );
+}
+
+//  ---------------------------------------------------------------------------
+//  Called when the LOADED game event has been successfully sent.
+//  ---------------------------------------------------------------------------
+void webhooks_on_access_token_received
+(
+  const char* access_token
+)
+{
+  locals.access_token = access_token;
+  is_access_token_valid = true;
+  
+  if(queued_game_event.game_event_id == LOADED) {
+    wc_send_game_event
+    (
+      locals.access_token,
+      queued_game_event,
+      &webhooks_on_loaded_game_event_sent
+    );
+  }
+  else if(queued_game_event.game_event_id == UNLOADED) {
+    wc_send_game_event
+    (
+      locals.access_token,
+      queued_game_event,
+      &webhooks_on_unloaded_game_event_sent
+    );
+  }
+}
+
+//  ---------------------------------------------------------------------------
+//  Initializes the webhooks subsystem.
+//  ---------------------------------------------------------------------------
+void webhooks_initialize
+(
+ void
+)
+{
+  if (locals.initialized) {
+    return;
+  }
+
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Initializing\n");
+
+  rc_runtime_init(&locals.runtime);
+
+  clean_queued_game_event();
+  
+  woauth_load_accesstoken
+  (
+    (access_token_callback_t)&webhooks_on_access_token_received
+  );
+
+  locals.initialized = true;
 }
 
 //  ---------------------------------------------------------------------------
@@ -441,44 +502,24 @@ void webhooks_load_game
 
   if (strlen(locals.hash) > 0) {
     
-    wc_game_event_t loaded_game_event;
-    loaded_game_event.console_id = locals.console_id;
-    loaded_game_event.rom_hash = locals.hash;
-    loaded_game_event.game_event_id = LOADED;
-    loaded_game_event.frame_number = frame_counter;
-    loaded_game_event.time = time;
+    queued_game_event.console_id = locals.console_id;
+    queued_game_event.rom_hash = locals.hash;
+    queued_game_event.game_event_id = LOADED;
+    queued_game_event.frame_number = frame_counter;
+    queued_game_event.time = time;
     
     if (!is_access_token_valid) {
       WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No LOADED game event sent.\n");
-      //  TODO Queue?
       return;
     }
     
     wc_send_game_event
     (
-      loaded_game_event,
+      locals.access_token,
+      queued_game_event,
       &webhooks_on_loaded_game_event_sent
     );
   }
-}
-
-//  ---------------------------------------------------------------------------
-//  Called when the UNLOADED game event has been sent
-//  ---------------------------------------------------------------------------
-void webhooks_on_unloaded_game_event_sent
-(
-  void
-)
-{
-  wmd_on_game_unloaded();
-
-  is_game_loaded = 0;
-  
-  wpd_download_game_progress
-  (
-    &locals,
-    &wh_on_game_progress_downloaded
-  );
 }
 
 //  ---------------------------------------------------------------------------
@@ -495,22 +536,21 @@ void webhooks_unload_game
   
   if (strlen(locals.hash) > 0) {
     
-    wc_game_event_t unloaded_game_event;
-    unloaded_game_event.console_id = locals.console_id;
-    unloaded_game_event.rom_hash = locals.hash;
-    unloaded_game_event.game_event_id = UNLOADED;
-    unloaded_game_event.frame_number = frame_counter;
-    unloaded_game_event.time = time;
+    queued_game_event.console_id = locals.console_id;
+    queued_game_event.rom_hash = locals.hash;
+    queued_game_event.game_event_id = UNLOADED;
+    queued_game_event.frame_number = frame_counter;
+    queued_game_event.time = time;
     
     if (!is_access_token_valid) {
       WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No UNLOADED game event sent.\n");
-      //  TODO Queue?
       return;
     }
     
     wc_send_game_event
     (
-      unloaded_game_event,
+      locals.access_token,
+      queued_game_event,
       &webhooks_on_unloaded_game_event_sent
     );
   }
@@ -631,6 +671,7 @@ void webhooks_update_achievements
   
   wc_send_achievement_event
   (
+    locals.access_token,
     achievement_game_event,
     achievement
   );

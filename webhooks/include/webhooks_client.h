@@ -23,23 +23,27 @@ typedef struct wc_achievement_event_t
 
 void wc_send_game_event
 (
+  const char* access_token,
   wc_game_event_t game_event,
   void* on_game_event_sent_callback
 );
 
 void wc_send_achievement_event
 (
+  const char* access_token,
   wc_game_event_t game_event,
   wc_achievement_event_t achievement_event
 );
 
 void wc_send_keep_alive_event
 (
+  const char* access_token,
   wc_game_event_t game_event
 );
 
 void wc_update_progress
 (
+  const char* access_token,
   wc_game_event_t game_event,
   const char* progress
 );

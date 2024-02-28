@@ -278,13 +278,10 @@ static void wc_set_keep_alive_request_url
 //  ---------------------------------------------------------------------------
 static void wc_set_request_header
 (
+  const char* access_token,
   async_http_request_t* request
 )
 {
-  //  Builds the header containing the authorization.
-  //  TODO!!
-  const char* access_token = NULL;//woauth_get_accesstoken();
-
   if (access_token == NULL)
   {
     WEBHOOKS_LOG(WEBHOOKS_TAG "Failed to retrieve an access token\n");
@@ -320,6 +317,7 @@ static void wc_set_request_header
 //  ---------------------------------------------------------------------------
 static void wc_prepare_progress_http_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   const char* progress,
   async_http_request_t* request
@@ -332,7 +330,11 @@ static void wc_prepare_progress_http_request
     request
   );
 
-  wc_set_request_header(request);
+  wc_set_request_header
+  (
+    access_token,
+    request
+  );
 }
 
 //  ---------------------------------------------------------------------------
@@ -340,6 +342,7 @@ static void wc_prepare_progress_http_request
 //  ---------------------------------------------------------------------------
 static void wc_prepare_event_http_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   async_http_request_t* request
 )
@@ -350,7 +353,11 @@ static void wc_prepare_event_http_request
    request
  );
 
-  wc_set_request_header(request);
+  wc_set_request_header
+  (
+    access_token,
+    request
+  );
 }
 
 //  ---------------------------------------------------------------------------
@@ -358,6 +365,7 @@ static void wc_prepare_event_http_request
 //  ---------------------------------------------------------------------------
 static void wc_prepare_achievement_http_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   wc_achievement_event_t achievement_event,
   async_http_request_t* request
@@ -370,7 +378,11 @@ static void wc_prepare_achievement_http_request
     request
   );
 
-  wc_set_request_header(request);
+  wc_set_request_header
+  (
+    access_token,
+    request
+  );
 }
 
 //  ---------------------------------------------------------------------------
@@ -378,6 +390,7 @@ static void wc_prepare_achievement_http_request
 //  ---------------------------------------------------------------------------
 static void wc_prepare_keep_alive_http_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   async_http_request_t* request
 )
@@ -388,7 +401,11 @@ static void wc_prepare_keep_alive_http_request
     request
   );
 
-  wc_set_request_header(request);
+  wc_set_request_header
+  (
+    access_token,
+    request
+  );
 }
 
 //  ---------------------------------------------------------------------------
@@ -396,6 +413,7 @@ static void wc_prepare_keep_alive_http_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_progress_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   const char* progress,
   async_http_request_t* request
@@ -403,9 +421,10 @@ static void wc_initiate_progress_request
 {
   wc_prepare_progress_http_request
   (
-   game_event,
-   progress,
-   request
+    access_token,
+    game_event,
+    progress,
+    request
   );
 
   wc_begin_http_request(request);
@@ -416,12 +435,14 @@ static void wc_initiate_progress_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_event_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
   wc_prepare_event_http_request
   (
+    access_token,
     game_event,
     request
   );
@@ -434,6 +455,7 @@ static void wc_initiate_event_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_achievement_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   wc_achievement_event_t achievement_event,
   async_http_request_t* request
@@ -441,6 +463,7 @@ static void wc_initiate_achievement_request
 {
   wc_prepare_achievement_http_request
   (
+    access_token,
     game_event,
     achievement_event,
     request
@@ -454,12 +477,14 @@ static void wc_initiate_achievement_request
 //  ---------------------------------------------------------------------------
 static void wc_initiate_keep_alive_request
 (
+  const char* access_token,
   wc_game_event_t game_event,
   async_http_request_t* request
 )
 {
   wc_prepare_keep_alive_http_request
   (
+    access_token,
     game_event,
     request
   );
@@ -472,6 +497,7 @@ static void wc_initiate_keep_alive_request
 //  ---------------------------------------------------------------------------
 void wc_update_progress
 (
+  const char* access_token,
   wc_game_event_t game_event,
   const char* progress
 )
@@ -488,6 +514,7 @@ void wc_update_progress
 
   wc_initiate_progress_request
   (
+    access_token,
     game_event,
     progress,
     request
@@ -499,6 +526,7 @@ void wc_update_progress
 //  ---------------------------------------------------------------------------
 void wc_send_game_event
 (
+  const char* access_token,
   wc_game_event_t game_event,
   void* on_game_event_sent_callback
 )
@@ -520,6 +548,7 @@ void wc_send_game_event
 
   wc_initiate_event_request
   (
+    access_token,
     game_event,
     request
   );
@@ -530,6 +559,7 @@ void wc_send_game_event
 //  ---------------------------------------------------------------------------
 void wc_send_achievement_event
 (
+  const char* access_token,
   wc_game_event_t game_event,
   wc_achievement_event_t achievement_event
 )
@@ -546,6 +576,7 @@ void wc_send_achievement_event
 
   wc_initiate_achievement_request
   (
+    access_token,
     game_event,
     achievement_event,
     request
@@ -557,6 +588,7 @@ void wc_send_achievement_event
 //  ---------------------------------------------------------------------------
 void wc_send_keep_alive_event
 (
+  const char* access_token,
   wc_game_event_t game_event
 )
 {
@@ -572,6 +604,7 @@ void wc_send_keep_alive_event
 
   wc_initiate_keep_alive_request
   (
+    access_token,
     game_event,
     request
   );
