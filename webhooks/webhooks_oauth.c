@@ -124,12 +124,10 @@ static void woauth_free_request
   rc_api_destroy_request(&request->request);
 
   free(request->headers);
-  
   request->headers = NULL;
-  
   request->callback = NULL;
   
-  //free(request);
+  free(request);
 }
 
 //  ------------------------------------------------------------------------------
@@ -212,8 +210,14 @@ static void woauth_end_http_request
   }
 
   // Check again a moment later.
-  if (data != NULL) {
-    if (data->status == 204 && request->type == ACCESS_TOKEN) {
+  if (request->type == ACCESS_TOKEN) {
+    if (data == NULL) {
+      WEBHOOKS_LOG(WEBHOOKS_TAG "No response from the server. Retrying...\n");
+      
+      //  Would it be better to exponentially back off?
+      woauth_schedule_accesstoken_retrieval();
+    }
+    else if (data->status == 204) {
       WEBHOOKS_LOG(WEBHOOKS_TAG "User has not entered the code on the website. Retrying...\n");
       woauth_schedule_accesstoken_retrieval();
     }
@@ -311,9 +315,6 @@ static void woauth_handle_accesstoken_response
   (
     oauth_token_response.access_token
   );
-  
-  free(request);
-  request = NULL;
 
   is_pairing = false;
   
