@@ -43,7 +43,10 @@ int is_game_loaded = 0;
 bool is_access_token_valid = 0;
 retro_time_t last_update_time;
 unsigned long frame_counter = 0;
+
 wc_game_event_t queued_game_event;
+wc_game_event_t queued_achievement_game_event;
+wc_achievement_event_t queued_achievement;
 
 const unsigned short NONE = 0;
 const unsigned short LOADED = 1;
@@ -65,6 +68,17 @@ void clean_queued_game_event
   queued_game_event.time = 0;
 }
 
+void clean_queued_achievement_game_event
+(
+  void
+)
+{
+  queued_achievement_game_event.console_id = 0;
+  queued_achievement_game_event.rom_hash = "";
+  queued_achievement_game_event.game_event_id = NONE;
+  queued_achievement_game_event.frame_number = 0;
+  queued_achievement_game_event.time = 0;
+}
 //  ---------------------------------------------------------------------------
 //
 //  ---------------------------------------------------------------------------
@@ -379,6 +393,17 @@ static void wh_on_game_progress_downloaded
 }
 
 //  ---------------------------------------------------------------------------
+//  Called when the ACHIEVEMENT game event has been sent
+//  ---------------------------------------------------------------------------
+void webhooks_on_achievement_game_event_sent
+(
+  void
+)
+{
+  clean_queued_achievement_game_event();
+}
+
+//  ---------------------------------------------------------------------------
 //  Called when the LOADED game event has been successfully sent.
 //  ---------------------------------------------------------------------------
 void webhooks_on_loaded_game_event_sent
@@ -387,7 +412,20 @@ void webhooks_on_loaded_game_event_sent
 )
 {
   clean_queued_game_event();
-  
+
+  if (queued_achievement_game_event.game_event_id == ACHIEVEMENT)
+  {
+    //  Immediately sends the achievement even if
+    //  the progress macro have not been downloaded yet.
+    wc_send_achievement_event
+    (
+      locals.access_token,
+      queued_achievement_game_event,
+      queued_achievement,
+      &webhooks_on_achievement_game_event_sent
+    );
+  }
+
   wpd_download_game_progress
   (
     &locals,
@@ -436,7 +474,8 @@ void webhooks_on_access_token_received
   locals.access_token = access_token;
   is_access_token_valid = true;
   
-  if(queued_game_event.game_event_id == LOADED) {
+  if (queued_game_event.game_event_id == LOADED)
+  {
     wc_send_game_event
     (
       locals.access_token,
@@ -444,7 +483,8 @@ void webhooks_on_access_token_received
       &webhooks_on_loaded_game_event_sent
     );
   }
-  else if(queued_game_event.game_event_id == UNLOADED) {
+  else if (queued_game_event.game_event_id == UNLOADED)
+  {
     wc_send_game_event
     (
       locals.access_token,
@@ -459,7 +499,7 @@ void webhooks_on_access_token_received
 //  ---------------------------------------------------------------------------
 void webhooks_initialize
 (
- void
+  void
 )
 {
   if (locals.initialized) {
@@ -478,6 +518,8 @@ void webhooks_initialize
   );
 
   locals.initialized = true;
+  
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Initialized\n");
 }
 
 //  ---------------------------------------------------------------------------
@@ -604,21 +646,29 @@ void webhooks_process_frame
   if (!is_game_loaded)
     return;
   
-  // frame_counter++;
-  //
-  // const retro_time_t time = cpu_features_get_time_usec();
-  //
-  // //  Gets the latest values from the memory.
-  // rc_update_memref_values(locals.runtime.memrefs, &wb_peek, NULL);
-  // rc_update_variables(locals.runtime.variables, &wb_peek, NULL, NULL);
-  //
-  // wb_check_game_events(frame_counter, time);
-  //
-  // wb_check_progress(frame_counter, time);
-  //
-  // wmd_dump(frame_counter, &locals);
+   frame_counter++;
+
+  if (!is_access_token_valid) {
+    WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No PROGRESS game event sent.\n");
+    return;
+  }
+
+   const retro_time_t time = cpu_features_get_time_usec();
+
+   //  Gets the latest values from the memory.
+   rc_update_memref_values(locals.runtime.memrefs, &wb_peek, NULL);
+   rc_update_variables(locals.runtime.variables, &wb_peek, NULL, NULL);
+
+   wb_check_game_events(frame_counter, time);
+
+   wb_check_progress(frame_counter, time);
+
+   wmd_dump(frame_counter, &locals);
 }
 
+//  ---------------------------------------------------------------------------
+//  
+//  ---------------------------------------------------------------------------
 void webhooks_update_achievements
 (
   const rcheevos_racheevo_t* cheevo,
@@ -649,31 +699,29 @@ void webhooks_update_achievements
       number_of_active++;
   }
 
-  wc_game_event_t achievement_game_event;
-  achievement_game_event.console_id = locals.console_id;
-  achievement_game_event.rom_hash = locals.hash;
-  achievement_game_event.game_event_id = ACHIEVEMENT;
-  achievement_game_event.frame_number = frame_counter;
-  achievement_game_event.time = time;
+  queued_achievement_game_event.console_id = locals.console_id;
+  queued_achievement_game_event.rom_hash = locals.hash;
+  queued_achievement_game_event.game_event_id = ACHIEVEMENT;
+  queued_achievement_game_event.frame_number = frame_counter;
+  queued_achievement_game_event.time = time;
   
-  wc_achievement_event_t achievement;
-  achievement.active = number_of_active;
-  achievement.total = total_number;
-  achievement.badge = achievement_id;
-  achievement.title = achievement_title;
-  achievement.points = achievement_points;
+  queued_achievement.active = number_of_active;
+  queued_achievement.total = total_number;
+  queued_achievement.badge = achievement_id;
+  queued_achievement.title = achievement_title;
+  queued_achievement.points = achievement_points;
   
   if (!is_access_token_valid) {
     WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No ACHIEVEMENT game event sent.\n");
-    //  TODO Queue?
     return;
   }
   
   wc_send_achievement_event
   (
     locals.access_token,
-    achievement_game_event,
-    achievement
+    queued_achievement_game_event,
+    queued_achievement,
+    &webhooks_on_achievement_game_event_sent
   );
 }
 

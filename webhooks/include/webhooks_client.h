@@ -32,7 +32,8 @@ void wc_send_achievement_event
 (
   const char* access_token,
   wc_game_event_t game_event,
-  wc_achievement_event_t achievement_event
+  wc_achievement_event_t achievement_event,
+  void* on_game_event_sent_callback
 );
 
 void wc_send_keep_alive_event

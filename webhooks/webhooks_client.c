@@ -40,7 +40,7 @@ static void wc_on_game_event_sent_completed
   size_t buffer_size
 )
 {
-  void (*on_game_event_sent_callback)() = request->callback;
+  void (*on_game_event_sent_callback)(void) = request->callback;
   unsigned short game_event = (unsigned short)(request->callback_data);
 
   WEBHOOKS_LOG(WEBHOOKS_TAG "Game event '%d' has been sent\n", game_event);
@@ -561,7 +561,8 @@ void wc_send_achievement_event
 (
   const char* access_token,
   wc_game_event_t game_event,
-  wc_achievement_event_t achievement_event
+  wc_achievement_event_t achievement_event,
+  void* on_game_event_sent_callback
 )
 {
   WEBHOOKS_LOG(WEBHOOKS_TAG "Sending game achievement event '%d' for ROM's hash '%s' (frame=%ld)\n", game_event.game_event_id, game_event.rom_hash, game_event.frame_number);
@@ -573,6 +574,9 @@ void wc_send_achievement_event
     WEBHOOKS_LOG(WEBHOOKS_TAG "Failed to allocate HTTP request for game achievement event\n");
     return;
   }
+
+  request->callback = (async_client_callback)on_game_event_sent_callback;
+  request->callback_data = (void*)&game_event;
 
   wc_initiate_achievement_request
   (
