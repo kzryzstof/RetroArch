@@ -3,6 +3,8 @@
 
 RETRO_BEGIN_DECLS
 
+typedef void (*access_token_callback_t)(const char*);
+
 void woauth_initiate_pairing
 (
   void
@@ -18,9 +20,9 @@ void woauth_abort_pairing
   void
 );
 
-const char* woauth_get_accesstoken
+void woauth_load_accesstoken
 (
-  void
+  access_token_callback_t on_access_token_retrieved_callback
 );
 
 RETRO_END_DECLS

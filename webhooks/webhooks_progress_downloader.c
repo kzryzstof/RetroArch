@@ -15,26 +15,21 @@
 //  ---------------------------------------------------------------------------
 
 
-// //  ---------------------------------------------------------------------------
-// //
-// //  ---------------------------------------------------------------------------
-// static void wpd_end_http_request(async_http_request_t* request)
-// {
-//   rc_api_destroy_request(&request->request);
+//  ---------------------------------------------------------------------------
 //
-//   if (request->callback/* && !rcheevos_load_aborted()*/)
-//     request->callback(request->callback_data);
-//
-//   /* rich presence request will be reused on next ping - reset the attempt
-//    * counter. for all other request types, free the request object */
-//   //free(request->request.url);
-//   //request->request.url = NULL;
-//
-//   //free(request->headers);
-//   //request->headers = NULL;
-//
-//   //free(request);
-// }
+//  ---------------------------------------------------------------------------
+static void wpd_end_http_request
+(
+  async_http_request_t* request
+)
+{
+  rc_api_destroy_request(&request->request);
+
+  free(request->headers);
+  request->headers = NULL;
+ 
+  free(request);
+}
 
 //  ---------------------------------------------------------------------------
 //
@@ -48,59 +43,52 @@ static void wpd_send_http_request_callback
 )
 {
   struct async_http_request_t *request = (struct async_http_request_t*)user_data;
-  http_transfer_data_t      *data    = (http_transfer_data_t*)task_data;
-  //const bool                 aborted = rcheevos_load_aborted();
+  http_transfer_data_t *data = (http_transfer_data_t*)task_data;
   char buffer[224];
 
-  /*if (aborted)
-  {
-    // load was aborted. don't process the response
-    strlcpy(buffer, "Load aborted", sizeof(buffer));
-  }
-  else*/ if (error)
+  if (error)
   {
     strlcpy(buffer, error, sizeof(buffer));
   }
   else if (!data)
   {
-    /* Server did not return HTTP headers */
+    //  Server did not return HTTP headers
     strlcpy(buffer, "Server communication error", sizeof(buffer));
   }
-  else if (!data->data || !data->len)
+  else
   {
     if (data->status <= 0)
     {
-      /* something occurred which prevented the response from being processed.
-       * assume the server request hasn't happened and try again. */
+      //  Something occurred which prevented the response from being processed.
+      //  assume the server request hasn't happened and try again.
       snprintf(buffer, sizeof(buffer), "task status code %d", data->status);
       return;
     }
 
-    if (data->status != 200) /* Server returned error via status code. */
+    if (data->status <= 299)
+    {
+      snprintf(buffer, sizeof(buffer), "HTTP status code %d", data->status);
+      
+      //  Indicate success unless handler provides error
+      buffer[0] = '\0';
+
+      //  Call appropriate handler to process the response
+      if (request->handler)
+        request->handler(request, data, buffer, sizeof(buffer));
+      
+    }
+    else if (data->status > 299)
     {
       snprintf(buffer, sizeof(buffer), "HTTP error code %d", data->status);
     }
     else {
-      /* Server sent empty response without error status code */
+      //  Server sent empty response without error status code
       strlcpy(buffer, "No response from server", sizeof(buffer));
     }
-  }
-  else
-  {
-    /* indicate success unless handler provides error */
-    buffer[0] = '\0';
-
-    /* Call appropriate handler to process the response */
-    /* NOTE: data->data is not null-terminated. Most handlers assume the
-     * response is properly formatted or will encounter a parse failure
-     * before reading past the end of the data */
-    if (request->handler)
-      request->handler(request, data, buffer, sizeof(buffer));
   }
 
   if (!buffer[0])
   {
-    /* success */
     if (request->success_message)
     {
       if (request->id)
@@ -111,8 +99,8 @@ static void wpd_send_http_request_callback
   }
   else
   {
-    /* encountered an error */
     char errbuf[256];
+    
     if (request->id)
       snprintf(errbuf, sizeof(errbuf), "%s %u: %s", request->failure_message, request->id, buffer);
     else
@@ -120,12 +108,18 @@ static void wpd_send_http_request_callback
 
     WEBHOOKS_LOG(WEBHOOKS_TAG "%s\n", errbuf);
   }
+
+  wpd_end_http_request(request);
 }
 
 //  ---------------------------------------------------------------------------
 //  Configures the HTTP request to GET the macro from the webhook server.
 //  ---------------------------------------------------------------------------
-static void wpd_send_http_request(const wb_locals_t* locals, async_http_request_t* request)
+static void wpd_send_http_request
+(
+  const wb_locals_t* locals,
+  async_http_request_t* request
+)
 {
   task_push_http_transfer_with_headers
   (
@@ -141,17 +135,12 @@ static void wpd_send_http_request(const wb_locals_t* locals, async_http_request_
 //  ---------------------------------------------------------------------------
 //  Builds and sets the request's header, mainly the bearer token.
 //  ---------------------------------------------------------------------------
-static void wpd_set_request_header(async_http_request_t* request)
+static void wpd_set_request_header
+(
+  const char* access_token,
+  async_http_request_t* request
+)
 {
-  //  Builds the header containing the authorization.
-  const char* access_token = woauth_get_accesstoken();
-
-  if (access_token == NULL)
-  {
-    WEBHOOKS_LOG(WEBHOOKS_TAG "Failed to retrieve an access token\n");
-    return;
-  }
-
   const char* authorization_header = "Authorization: Bearer ";
   const size_t auth_header_len = strlen(authorization_header);
   const size_t token_len = strlen(access_token);
@@ -214,21 +203,45 @@ static void wpd_set_request_url
 //  ---------------------------------------------------------------------------
 //  Configures the HTTP request to GET the macro from the webhook server.
 //  ---------------------------------------------------------------------------
-static void wpd_prepare_http_request(const wb_locals_t* locals, async_http_request_t* request)
+static void wpd_prepare_http_request
+(
+  const wb_locals_t* locals,
+  async_http_request_t* request
+)
 {
-  wpd_set_request_url(locals, request);
+  wpd_set_request_url
+  (
+    locals,
+    request
+  );
 
-  wpd_set_request_header(request);
+  wpd_set_request_header
+  (
+    locals->access_token,
+    request
+  );
 }
 
 //  ---------------------------------------------------------------------------
 //
 //  ---------------------------------------------------------------------------
-static void wpd_initiate_macro_request(wb_locals_t* locals, async_http_request_t* request)
+static void wpd_initiate_macro_request
+(
+  wb_locals_t* locals,
+  async_http_request_t* request
+)
 {
-  wpd_prepare_http_request(locals, request);
+  wpd_prepare_http_request
+  (
+    locals,
+    request
+  );
 
-  wpd_send_http_request(locals, request);
+  wpd_send_http_request
+  (
+    locals,
+    request
+  );
 }
 
 //  ---------------------------------------------------------------------------
