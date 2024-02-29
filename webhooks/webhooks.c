@@ -39,8 +39,8 @@ struct wb_identify_game_data_t
 //  Contains all the shared state for all the webhook modules.
 wb_locals_t locals;
 
-int is_game_loaded = 0;
-bool is_access_token_valid = 0;
+bool is_game_loaded = false;
+bool is_access_token_valid = false;
 retro_time_t last_update_time;
 unsigned long frame_counter = 0;
 
@@ -294,15 +294,13 @@ static void wb_check_progress
   }
   else {
 
-    if (is_game_loaded == 1) {
+    if (is_game_loaded && is_access_token_valid) {
 
       retro_time_t current_time = cpu_features_get_time_usec();
 
       long long elapsed_time = current_time - last_update_time;
 
       if (elapsed_time >= 60000000) {
-
-        WEBHOOKS_LOG(WEBHOOKS_TAG "Sending KEEP ALIVE\n");
 
         wc_game_event_t keep_alive_event;
         keep_alive_event.console_id = locals.console_id;
@@ -437,7 +435,7 @@ void webhooks_on_loaded_game_event_sent
     locals.hash
   );
 
-  is_game_loaded = 1;
+  is_game_loaded = true;
   
   //  TODO Send task to notify user everything is ok with Play Lab server
 }
@@ -454,7 +452,7 @@ void webhooks_on_unloaded_game_event_sent
   
   wmd_on_game_unloaded();
 
-  is_game_loaded = 0;
+  is_game_loaded = false;
   
   wpd_download_game_progress
   (
