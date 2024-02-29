@@ -606,32 +606,51 @@ void webhooks_reset_game
  void
 )
 {
-  // WEBHOOKS_LOG(WEBHOOKS_TAG "Current game has been reset\n");
-  //
-  // frame_counter = 0;
-  //
-  // const retro_time_t time = cpu_features_get_time_usec();
-  //
-  // wb_reset_game_events();
-  //
-  // wpt_clear_progress();
-  //
-  // if (strlen(locals.hash) > 0) {
-  //
-  //  if (!is_access_token_valid) {
-        //    WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No UNLOADED/LOADED game event sent.\n");
-        //    //  TODO Queue?
-        //    return;
-        //  }
-  //
-  //
-  //   wc_send_game_event(locals.console_id, locals.hash, UNLOADED, frame_counter, time, NULL);
-  //   wc_send_game_event(locals.console_id, locals.hash, LOADED, frame_counter, time, NULL);
-  // }
-  //
-  // wmd_on_game_unloaded();
-  //
-  // wmd_on_game_loaded(locals.hash);
+  WEBHOOKS_LOG(WEBHOOKS_TAG "Current game has been reset\n");
+
+  frame_counter = 0;
+
+  const retro_time_t time = cpu_features_get_time_usec();
+
+  wb_reset_game_events();
+
+  wpt_clear_progress();
+
+  if (strlen(locals.hash) > 0) {
+
+    queued_game_event.console_id = locals.console_id;
+    queued_game_event.rom_hash = locals.hash;
+    queued_game_event.game_event_id = LOADED;
+    queued_game_event.frame_number = frame_counter;
+    queued_game_event.time = time;
+
+    if (!is_access_token_valid) {
+      WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No UNLOADED/LOADED game event sent.\n");
+      return;
+    }
+
+    queued_game_event.game_event_id = UNLOADED;
+
+    wc_send_game_event
+    (
+      locals.access_token,
+      queued_game_event,
+      &webhooks_on_unloaded_game_event_sent
+    );
+
+    queued_game_event.game_event_id = LOADED;
+
+    wc_send_game_event
+    (
+      locals.access_token,
+      queued_game_event,
+      &webhooks_on_loaded_game_event_sent
+    );
+  }
+
+  wmd_on_game_unloaded();
+
+  wmd_on_game_loaded(locals.hash);
 }
 
 
