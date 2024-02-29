@@ -23,6 +23,7 @@
 #include "../deps/rcheevos/include/rc_runtime.h"
 #include "../deps/rcheevos/include/rc_runtime_types.h"
 #include "../deps/rcheevos/include/rc_hash.h"
+#include "../deps/rcheevos/src/rcheevos/rc_internal.h"
 
 #include "../cheevos/cheevos_locals.h"
 
