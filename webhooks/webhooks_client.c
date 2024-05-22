@@ -215,7 +215,6 @@ static void wc_set_event_request_url
 static void wc_set_achievement_request_url
 (
   wc_game_event_t game_event,
-  wc_achievement_event_t achievement_event,
   async_http_request_t* request
 )
 {
@@ -231,14 +230,22 @@ static void wc_set_achievement_request_url
   char frame_number_str[64];
   sprintf(frame_number_str, "%ld", game_event.frame_number);
 
+  int achievement_number = 0;
+  char achievements_str[2048];
+  achievements_str[0] = '\0';
+  char temp_achievements_str[64];
+
+  while(game_event.awarded_achievements[achievement_number] != 0) {
+    snprintf(temp_achievements_str, sizeof(temp_achievements_str), "%ld_", game_event.awarded_achievements[achievement_number]);
+    strncat(achievements_str, temp_achievements_str, sizeof(achievements_str)-strlen(achievements_str)-1);
+    achievement_number++;
+  };
+
   rc_url_builder_append_str_param(&builder, "h", game_event.rom_hash);
   rc_url_builder_append_num_param(&builder, "c", game_event.console_id);
   rc_url_builder_append_num_param(&builder, "e", game_event.game_event_id);
-  rc_url_builder_append_num_param(&builder, "a", achievement_event.active);
-  rc_url_builder_append_num_param(&builder, "b", achievement_event.total);
-  rc_url_builder_append_str_param(&builder, "d", achievement_event.badge);
-  rc_url_builder_append_str_param(&builder, "g", achievement_event.title);
-  rc_url_builder_append_num_param(&builder, "i", achievement_event.points);
+  rc_url_builder_append_str_param(&builder, "a", achievements_str);
+  rc_url_builder_append_num_param(&builder, "b", game_event.total_achievements);
   rc_url_builder_append_str_param(&builder, "f", frame_number_str);
   rc_url_builder_append_str_param(&builder, "t", time_str);
   request->request.post_data = rc_url_builder_finalize(&builder);
@@ -367,14 +374,12 @@ static void wc_prepare_achievement_http_request
 (
   const char* access_token,
   wc_game_event_t game_event,
-  wc_achievement_event_t achievement_event,
   async_http_request_t* request
 )
 {
   wc_set_achievement_request_url
   (
     game_event,
-    achievement_event,
     request
   );
 
@@ -457,7 +462,6 @@ static void wc_initiate_achievement_request
 (
   const char* access_token,
   wc_game_event_t game_event,
-  wc_achievement_event_t achievement_event,
   async_http_request_t* request
 )
 {
@@ -465,7 +469,6 @@ static void wc_initiate_achievement_request
   (
     access_token,
     game_event,
-    achievement_event,
     request
   );
 
@@ -561,7 +564,6 @@ void wc_send_achievement_event
 (
   const char* access_token,
   wc_game_event_t game_event,
-  wc_achievement_event_t achievement_event,
   void* on_game_event_sent_callback
 )
 {
@@ -582,7 +584,6 @@ void wc_send_achievement_event
   (
     access_token,
     game_event,
-    achievement_event,
     request
   );
 }

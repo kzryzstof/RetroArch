@@ -41,6 +41,7 @@ void webhooks_log(const char *fmt, ...);
 
 #define HASH_LENGTH 33
 #define GAME_PROGRESS_LENGTH 4096
+#define MAX_ACHIEVEMENTS 128
 
 RETRO_BEGIN_DECLS
 
@@ -82,7 +83,9 @@ typedef struct wb_locals_t
   unsigned int console_id;
   const rcheevos_racheevo_t* current_achievement;
   const rcheevos_racheevo_t* last_achievement;
+  unsigned int achievements_count;
   const char* access_token;
+  long awarded_achievements[MAX_ACHIEVEMENTS];
 } wb_locals_t;
 
 unsigned wb_peek
@@ -102,15 +105,18 @@ void webhooks_load_game
     const struct retro_game_info* info
 );
 
-void webhooks_unload_game(
+void webhooks_unload_game
+(
   void
 );
 
-void webhooks_reset_game(
+void webhooks_reset_game
+(
   void
 );
 
-void webhooks_process_frame(
+void webhooks_process_frame
+(
   void
 );
 
@@ -127,7 +133,7 @@ void webhooks_on_achievements_loaded
 
 void webhooks_on_achievement_awarded
 (
-  const rcheevos_racheevo_t* cheevo
+  const rcheevos_racheevo_t* achievements
 );
 
 RETRO_END_DECLS
