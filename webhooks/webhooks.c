@@ -47,7 +47,6 @@ unsigned long frame_counter = 0;
 
 wc_game_event_t queued_game_event;
 wc_game_event_t queued_achievement_game_event;
-wc_achievement_event_t queued_achievement;
 
 const unsigned short NONE = 0;
 const unsigned short LOADED = 1;
@@ -79,6 +78,8 @@ void clean_queued_achievement_game_event
   queued_achievement_game_event.game_event_id = NONE;
   queued_achievement_game_event.frame_number = 0;
   queued_achievement_game_event.time = 0;
+
+  memset(&(queued_achievement_game_event.awarded_achievements), 0, MAX_ACHIEVEMENTS * sizeof(long));
 }
 //  ---------------------------------------------------------------------------
 //
@@ -357,6 +358,14 @@ static void wb_check_game_events
   }
 }
 
+static void wb_clear_achievements
+(
+  void
+)
+{
+  memset(&(locals.awarded_achievements), 0, MAX_ACHIEVEMENTS * sizeof(long));
+}
+
 //  ---------------------------------------------------------------------------
 //
 //  ---------------------------------------------------------------------------
@@ -371,8 +380,6 @@ static void wb_reset_game_events
     rc_reset_trigger(trigger);
   }
 }
-
-
 
 //  ---------------------------------------------------------------------------
 //  Called when the game's progress & events have been received from the backend server.
@@ -420,7 +427,6 @@ void webhooks_on_loaded_game_event_sent
     (
       locals.access_token,
       queued_achievement_game_event,
-      queued_achievement,
       &webhooks_on_achievement_game_event_sent
     );
   }
@@ -539,6 +545,8 @@ void webhooks_load_game
 
   wh_init_memory(&locals);
 
+  wb_clear_achievements();
+
   wpt_clear_progress();
 
   if (strlen(locals.hash) > 0) {
@@ -548,7 +556,7 @@ void webhooks_load_game
     queued_game_event.game_event_id = LOADED;
     queued_game_event.frame_number = frame_counter;
     queued_game_event.time = time;
-    
+
     if (!is_access_token_valid) {
       WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No LOADED game event sent.\n");
       return;
@@ -615,6 +623,8 @@ void webhooks_reset_game
 
   wpt_clear_progress();
 
+  wb_clear_achievements();
+
   if (strlen(locals.hash) > 0) {
 
     queued_game_event.console_id = locals.console_id;
@@ -652,7 +662,6 @@ void webhooks_reset_game
   wmd_on_game_loaded(locals.hash);
 }
 
-
 //  ---------------------------------------------------------------------------
 //  Called for each frame.
 //  ---------------------------------------------------------------------------
@@ -687,21 +696,13 @@ void webhooks_process_frame
 //  ---------------------------------------------------------------------------
 //  
 //  ---------------------------------------------------------------------------
-void webhooks_update_achievements
-(
-  const rcheevos_racheevo_t* cheevo,
-  const char* achievement_id,
-  const char* achievement_title,
-  unsigned int achievement_points
-)
+void webhooks_update_achievements()
 {
-  int number_of_active  = 0;
-  int total_number      = 0;
-
   const retro_time_t time = cpu_features_get_time_usec();
 
   //  Only deals with supported & official achievements.
   const rcheevos_racheevo_t* current_achievement = locals.current_achievement;
+  int awarded_achievements = 0;
 
   for (; current_achievement < locals.last_achievement; current_achievement++)
   {
@@ -711,10 +712,8 @@ void webhooks_update_achievements
     if (current_achievement->active & RCHEEVOS_ACTIVE_UNSUPPORTED)
       continue;
 
-    total_number++;
-
-    if (current_achievement->active)
-      number_of_active++;
+    if (!current_achievement->active)
+      locals.awarded_achievements[awarded_achievements++] = current_achievement->id;
   }
 
   queued_achievement_game_event.console_id = locals.console_id;
@@ -722,13 +721,11 @@ void webhooks_update_achievements
   queued_achievement_game_event.game_event_id = ACHIEVEMENT;
   queued_achievement_game_event.frame_number = frame_counter;
   queued_achievement_game_event.time = time;
-  
-  queued_achievement.active = number_of_active;
-  queued_achievement.total = total_number;
-  queued_achievement.badge = achievement_id;
-  queued_achievement.title = achievement_title;
-  queued_achievement.points = achievement_points;
-  
+  queued_achievement_game_event.total_achievements = locals.achievements_count;
+
+  //  Only copies the awarded achievements, included one more for the zero.
+  memcpy(queued_achievement_game_event.awarded_achievements, locals.awarded_achievements, (awarded_achievements+1)*sizeof(long));
+
   if (!is_access_token_valid) {
     WEBHOOKS_LOG(WEBHOOKS_TAG "Access token is not available at this point. No ACHIEVEMENT game event sent.\n");
     return;
@@ -738,7 +735,6 @@ void webhooks_update_achievements
   (
     locals.access_token,
     queued_achievement_game_event,
-    queued_achievement,
     &webhooks_on_achievement_game_event_sent
   );
 }
@@ -751,26 +747,15 @@ void webhooks_on_achievements_loaded
 {
    locals.current_achievement = achievements;
    locals.last_achievement    = achievements + achievements_count;
+   locals.achievements_count  = achievements_count;
 
-   webhooks_update_achievements
-   (
-     achievements,
-     achievements->badge,
-     achievements->title,
-     achievements->points
-   );
+   webhooks_update_achievements();
 }
 
 void webhooks_on_achievement_awarded
 (
-  const rcheevos_racheevo_t* cheevo
+  const rcheevos_racheevo_t* achievements
 )
 {
-   webhooks_update_achievements
-   (
-     cheevo,
-     cheevo->badge,
-     cheevo->title,
-     cheevo->points
-   );
+   webhooks_update_achievements();
 }

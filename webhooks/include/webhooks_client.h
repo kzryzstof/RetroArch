@@ -1,6 +1,8 @@
 #ifndef __WEBHOOKS_CLIENT_H
 #define __WEBHOOKS_CLIENT_H
 
+#include "webhooks.h"
+
 RETRO_BEGIN_DECLS
 
 typedef struct wc_game_event_t
@@ -10,16 +12,9 @@ typedef struct wc_game_event_t
   unsigned short game_event_id;
   unsigned long frame_number;
   retro_time_t time;
+  long awarded_achievements[MAX_ACHIEVEMENTS];
+  unsigned int total_achievements;
 } wc_game_event_t;
-
-typedef struct wc_achievement_event_t
-{
-  unsigned int active;
-  unsigned int total;
-  const char* badge;
-  const char* title;
-  unsigned int points;
-} wc_achievement_event_t;
 
 void wc_send_game_event
 (
@@ -32,7 +27,6 @@ void wc_send_achievement_event
 (
   const char* access_token,
   wc_game_event_t game_event,
-  wc_achievement_event_t achievement_event,
   void* on_game_event_sent_callback
 );
 
